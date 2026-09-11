@@ -1,14 +1,32 @@
 name = "otzu-tech-solutions"
 type = "javascript"
 compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
 
-# Cloudflare Pages - no build needed for static site
-# If using Pages, this file is optional. For reference:
-# [site]
-# bucket = "./"
+# Cloudflare Pages — static + Functions
+# No build step: Pages serves index.html, book/, manage/, console/ directly.
+# Functions in ./functions/ handle /api/*
 
-# Pages Functions are in ./functions/
-# Bind email/KV/D1 here if needed, e.g.:
+# D1 database (optional — when bound, native APIs will use it instead of proxying to Vercel)
+# Create first: npx wrangler d1 create otzu-db  -> copy database_id below
+# Then: npx wrangler d1 execute otzu-db --file=./schema.sql && npx wrangler d1 execute otzu-db --file=./seed.sql
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "otzu-db"
+# database_id = "REPLACE_WITH_YOUR_D1_ID"
+
+# R2 bucket for room images / uploads (optional)
+# [[r2_buckets]]
+# binding = "UPLOADS"
+# bucket_name = "otzu-uploads"
+
+# KV for sessions (optional)
 # [[kv_namespaces]]
-# binding = "CONTACT_KV"
-# id = "xxxx"
+# binding = "SESSIONS"
+# id = "REPLACE_WITH_KV_ID"
+
+[vars]
+# Set to "true" to force proxying everything to Vercel origin (default)
+# Set to "false" after D1 is populated to use native DB
+VERCEL_PROXY = "true"
+CONTACT_EMAIL = "otim.no25@gmail.com"

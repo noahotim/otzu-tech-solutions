@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/logo.png" />
+  <title>OTZU Tech Solutions – Guest House Management</title>
+  <style>
+    :root {
+      --navy-950: #071426; --navy-900: #0a1b33; --navy-800: #0e2447;
+      --teal-500: #14b8a6; --teal-600: #0d9488; --teal-400: #2dd4bf;
+      --line: #e2e8f0; --muted: #64748b; --bg: #f1f5f9; --red: #dc2626;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: #0f172a; line-height: 1.55; }
+    button { font-family: inherit; cursor: pointer; }
+    input, select, textarea { font-family: inherit; font-size: 0.95rem; }
+
+    /* Login */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, var(--navy-900), var(--navy-950)); padding: 20px;
+    }
+    .login-card {
+      width: 100%; max-width: 380px; background: #fff; border-radius: 16px; padding: 28px;
+      box-shadow: 0 20px 60px rgb(0 0 0 / 0.35); text-align: center;
+    }
+    .login-card img { width: 64px; height: 64px; object-fit: contain; margin: 0 auto 12px; border-radius: 12px; }
+    .login-card h1 { font-size: 1.15rem; color: var(--navy-900); }
+    .login-card p { color: var(--muted); font-size: 0.88rem; margin: 8px 0 18px; }
+    .login-card input {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px;
+    }
+    .login-card input:focus { outline: none; border-color: var(--teal-500); box-shadow: 0 0 0 3px rgb(20 184 166 / 0.15); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 16px; border: 0; border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+      background: var(--teal-500); color: #fff; transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .btn:hover { background: var(--teal-600); }
+    .btn.ghost { background: transparent; color: var(--muted); }
+    .btn.ghost:hover { background: var(--bg); color: var(--navy-900); }
+    .btn.small { padding: 6px 10px; font-size: 0.8rem; }
+    .btn.warn { background: rgb(220 38 38 / 0.1); color: var(--red); }
+    .btn.warn:hover { background: rgb(220 38 38 / 0.18); }
+    .btn.block { width: 100%; }
+    .error { color: var(--red); font-size: 0.85rem; margin-top: 10px; }
+
+    /* Layout */
+    #appScreen { display: none; min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+    aside {
+      width: 230px; flex-shrink: 0; background: var(--navy-900); color: #fff;
+      display: flex; flex-direction: column; padding: 16px 12px; gap: 4px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; font-weight: 800; font-size: 0.95rem; }
+    .brand img { width: 30px; height: 30px; object-fit: contain; border-radius: 7px; }
+    .brand span { color: var(--teal-400); font-weight: 600; }
+    aside button {
+      text-align: left; padding: 10px 12px; border: 0; border-radius: 9px; background: transparent;
+      color: rgb(255 255 255 / 0.75); font-size: 0.9rem; font-weight: 600; transition: background 0.15s ease, color 0.15s ease;
+    }
+    aside button:hover { background: rgb(255 255 255 / 0.08); color: #fff; }
+    aside button.active { background: rgb(20 184 166 / 0.16); color: var(--teal-400); }
+    aside .spacer { flex: 1; }
+    main { flex: 1; min-width: 0; padding: 22px; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .topbar h1 { font-size: 1.35rem; color: var(--navy-900); }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .stat { background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 14px 16px; }
+    .stat .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .stat .value { font-size: 1.35rem; font-weight: 800; color: var(--navy-900); margin-top: 4px; }
+
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+    .card h2 { font-size: 1rem; color: var(--navy-900); margin-bottom: 12px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { text-align: left; padding: 8px 10px; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    tr:last-child td { border-bottom: 0; }
+    .tablewrap { overflow-x: auto; }
+
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .b-confirmed { background: rgb(14 165 233 / 0.12); color: #0284c7; }
+    .b-pending { background: rgb(245 158 11 / 0.14); color: #b45309; }
+    .b-checked_in { background: rgb(16 185 129 / 0.12); color: #059669; }
+    .b-checked_out { background: rgb(100 116 139 / 0.14); color: #475569; }
+    .b-cancelled { background: rgb(220 38 38 / 0.1); color: var(--red); }
+    .b-open { background: rgb(245 158 11 / 0.14); color: #b45309; }
+    .b-paid { background: rgb(16 185 129 / 0.12); color: #059669; }
+    .b-low { background: rgb(220 38 38 / 0.1); color: var(--red); }
+    .b-ok { background: rgb(16 185 129 / 0.12); color: #059669; }
+    .b-available { background: rgb(16 185 129 / 0.12); color: #059669; }
+    .b-maintenance { background: rgb(245 158 11 / 0.14); color: #b45309; }
+    .b-occupied { background: rgb(14 165 233 / 0.12); color: #0284c7; }
+    .b-dirty { background: rgb(245 158 11 / 0.14); color: #b45309; }
+    .b-cleaning { background: rgb(20 184 166 / 0.12); color: #0d9488; }
+    .b-out_of_order { background: rgb(220 38 38 / 0.1); color: var(--red); }
+    .b-sent { background: rgb(16 185 129 / 0.12); color: #059669; }
+    .b-simulated { background: rgb(14 165 233 / 0.12); color: #0284c7; }
+    .b-failed { background: rgb(220 38 38 / 0.1); color: var(--red); }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tabs button { padding: 8px 16px; border: 1px solid var(--line); background: #fff; border-radius: 9px; font-weight: 600; color: var(--muted); }
+    .tabs button.active { background: var(--navy-900); color: #fff; border-color: var(--navy-900); }
+
+    .bars { display: flex; align-items: flex-end; gap: 10px; height: 160px; margin-top: 14px; }
+    .bar { flex: 1; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--teal-400), var(--teal-600)); min-height: 3px; }
+    .bar-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--muted); }
+
+    /* Modal */
+    #modalBackdrop {
+      position: fixed; inset: 0; background: rgb(7 20 38 / 0.55); display: flex; align-items: center; justify-content: center;
+      padding: 16px; z-index: 50;
+    }
+    #modalBackdrop[hidden] { display: none; }
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 22px;
+      box-shadow: 0 24px 80px rgb(0 0 0 / 0.35);
+    }
+    .modal h3 { font-size: 1.05rem; color: var(--navy-900); margin-bottom: 4px; }
+    .modal .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .modal .field { margin-bottom: 12px; }
+    .modal label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--navy-900); margin-bottom: 5px; }
+    .modal input, .modal select, .modal textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff;
+    }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--teal-500); box-shadow: 0 0 0 3px rgb(20 184 166 / 0.15); }
+    .modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+    #toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--navy-900); color: #fff;
+      padding: 11px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 12px 40px rgb(0 0 0 / 0.3);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 60;
+    }
+    #toast.show { opacity: 1; }
+    #toast.err { background: var(--red); }
+
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; }
+      aside { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; }
+      aside .brand { width: 100%; }
+      aside button { padding: 8px 12px; }
+      aside .spacer { display: none; }
+      main { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="appScreen">
+    <div class="layout">
+      <aside>
+        <div class="brand"><img src="/logo.png" alt="logo" /> OTZU <span>Manage</span></div>
+        <div id="who" style="font-size:0.75rem;color:rgb(255 255 255 / 0.55);padding:0 12px 10px;"></div>
+        <button data-view="dashboard" data-roles="owner,system_admin,manager,finance,receptionist" class="active">Dashboard</button>
+        <button data-view="reservations" data-roles="owner,system_admin,manager,receptionist">Reservations</button>
+        <button data-view="rooms" data-roles="owner,system_admin,manager">Rooms</button>
+        <button data-view="guests" data-roles="owner,system_admin,manager,receptionist">Guests</button>
+        <button data-view="billing" data-roles="owner,system_admin,manager,finance,receptionist">Billing &amp; Payments</button>
+        <button data-view="inventory" data-roles="owner,system_admin,manager">Inventory</button>
+        <button data-view="staff" data-roles="owner,system_admin,manager,finance">Staff</button>
+        <button data-view="attendance" data-roles="owner,system_admin,manager,finance,receptionist,housekeeping,cleaner">Attendance</button>
+        <button data-view="attendanceReport" data-roles="owner,system_admin,manager,finance">Attendance Report</button>
+        <button data-view="notifications" data-roles="owner,system_admin,manager,receptionist">SMS Notifications</button>
+        <button data-view="housekeeping" data-roles="owner,system_admin,manager,housekeeping,cleaner">Housekeeping</button>
+        <button data-view="reports" data-roles="owner,system_admin,manager,finance">Reports</button>
+        <button data-view="payroll" data-roles="owner,system_admin,manager,finance">Payroll</button>
+        <button data-view="repair" data-roles="owner,system_admin,manager">Repair</button>
+        <button data-view="users" data-roles="owner,system_admin">Users</button>
+        <button data-view="sysadmin" data-roles="owner,system_admin">System Admin</button>
+        <div class="spacer"></div>
+        <a href="/" style="color:rgb(255 255 255 / 0.55);font-size:0.8rem;padding:6px 12px;">← View website</a>
+        <button id="changePwdBtn">Change password</button>
+        <button id="logoutBtn">Log out</button>
+      </aside>
+      <main id="content"></main>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" hidden>
+    <div class="modal">
+      <h3 id="modalTitle"></h3>
+      <p class="sub" id="modalSub"></p>
+      <div id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn ghost" id="modalCancel">Cancel</button>
+        <button class="btn" id="modalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    (function () {
+      "use strict";
+      var KEY = "otzuAdminKey";
+      var content = document.getElementById("content");
+      var currentView = "dashboard";
+      var currentUser = null;
+      var modalFields = [];
+      var modalOnSubmit = null;
+      var toastTimer = null;
+
+      function getKey() { try { return sessionStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
+      function setKey(k) { try { sessionStorage.setItem(KEY, k); } catch (e) {} }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function money(n) { return "UGX " + Number(n || 0).toLocaleString(); }
+      function dstr(v) {
+        if (!v) return "—";
+        try { return new Date(String(v).length === 10 ? v + "T00:00:00" : v).toLocaleDateString(); } catch (e) { return String(v); }
+      }
+      function eatTimeStr(v) {
+        if (!v) return "—";
+        try {
+          var d = new Date(v);
+          if (isNaN(d)) return String(v);
+          return d.toLocaleString("en-GB", { timeZone: "Africa/Kampala", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        } catch (e) { return String(v); }
+      }
+      function liveHours(r) {
+        if (r.hours != null) return r.hours + "h";
+        if (r.clock_in && !r.clock_out) return Math.max(0, Math.round(((Date.now() - new Date(r.clock_in).getTime()) / 3600000) * 100) / 100) + "h";
+        return "—";
+      }
+      function badge(status, label) {
+        return '<span class="badge b-' + esc(status) + '">' + esc(label || status.replace(/_/g, " ")) + "</span>";
+      }
+      function toast(msg, isErr) {
+        var el = document.getElementById("toast");
+        el.textContent = msg;
+        el.className = isErr ? "show err" : "show";
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { el.className = ""; }, 3200);
+      }
+
+      async function api(path, opts) {
+        opts = opts || {};
+        var headers = { "x-admin-key": getKey() };
+        if (opts.body !== undefined) headers["Content-Type"] = "application/json";
+        var res = await fetch(path, {
+          method: opts.method || "GET",
+          headers: headers,
+          body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+        });
+        var json = {};
+        try { json = await res.json(); } catch (e) {}
+        if (res.status === 401) { showLogin(); throw new Error("Unauthorized"); }
+        if (!res.ok) throw new Error(json.error || "Request failed");
+        return json;
+      }
+
+      function showLogin() {
+        window.location.href = "/manage";
+      }
+      function showApp() {
+        var loginScreen = document.getElementById("loginScreen");
+        if (loginScreen) loginScreen.style.display = "none";
+        document.getElementById("appScreen").style.display = "block";
+      }
+
+      /* ---------- Modal ---------- */
+      function openModal(title, sub, fields, onSubmit, saveLabel) {
+        modalFields = fields;
+        modalOnSubmit = onSubmit;
+        document.getElementById("modalTitle").textContent = title;
+        document.getElementById("modalSub").textContent = sub || "";
+        document.getElementById("modalBody").innerHTML = fields
+          .map(function (f) {
+            var control = "";
+            if (f.type === "select") {
+              control =
+                '<select id="f_' + esc(f.name) + '">' +
+                (f.options || []).map(function (o) {
+                  return '<option value="' + esc(o.value) + '"' + (String(f.value) === String(o.value) ? " selected" : "") + ">" + esc(o.label) + "</option>";
+                }).join("") +
+                "</select>";
+            } else if (f.type === "textarea") {
+              control = '<textarea id="f_' + esc(f.name) + '" rows="3">' + esc(f.value || "") + "</textarea>";
+            } else if (f.type === "checkbox") {
+              control = '<input type="checkbox" id="f_' + esc(f.name) + '"' + (f.value ? " checked" : "") + ">";
+            } else {
+              control =
+                '<input type="' + esc(f.type || "text") + '" id="f_' + esc(f.name) + '" value="' + esc(f.value || "") + '"' +
+                (f.required ? " required" : "") + ">";
+            }
+            return '<div class="field"><label>' + esc(f.label) + "</label>" + control + "</div>";
+          })
+          .join("");
+        document.getElementById("modalSave").textContent = saveLabel || "Save";
+        document.getElementById("modalBackdrop").hidden = false;
+        var first = document.querySelector("#modalBody input, #modalBody select");
+        if (first) first.focus();
+      }
+      function closeModal() { document.getElementById("modalBackdrop").hidden = true; modalOnSubmit = null; }
+      document.getElementById("modalCancel").addEventListener("click", closeModal);
+      document.getElementById("modalBackdrop").addEventListener("click", function (e) {
+        if (e.target.id === "modalBackdrop") closeModal();
+      });
+      document.getElementById("modalSave").addEventListener("click", async function () {
+        if (!modalOnSubmit) return;
+        var values = {};
+        for (var i = 0; i < modalFields.length; i++) {
+          var f = modalFields[i];
+          var el = document.getElementById("f_" + f.name);
+          values[f.name] = f.type === "checkbox" ? el.checked : el.value;
+        }
+        var btn = this;
+        btn.disabled = true;
+        try {
+          await modalOnSubmit(values);
+          closeModal();
+          go(currentView);
+        } catch (e) {
+          toast(e.message || "Could not save", true);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      /* ---------- Views ---------- */
+      function stat(label, value) {
+        return '<div class="stat"><div class="label">' + esc(label) + '</div><div class="value">' + value + "</div></div>";
+      }
+
+      async function viewDashboard() {
+        var data = await api("/api/reports");
+        var s = data.stats;
+        content.innerHTML =
+          '<div class="topbar"><h1>Dashboard</h1></div>' +
+          '<div class="stats">' +
+          stat("Rooms", s.rooms) + stat("Rooms ready", s.availableRooms) + stat("Occupied today", s.occupiedToday) +
+          stat("Upcoming bookings", s.activeReservations) + stat("Guests", s.guests) + stat("Outstanding", money(s.openTotal)) +
+          stat("Arrivals today", s.arrivalsToday) + stat("Departures today", s.departuresToday) +
+          "</div>" +
+          '<p style="font-size:0.8rem;color:var(--muted);margin:-6px 0 12px;">A room can have several bookings on different dates — that is why upcoming bookings can be more than the number of rooms. "Occupied today" shows the rooms actually in use right now.</p>' +
+          '<div class="card"><h2>Recent payments</h2><div class="tablewrap"><table>' +
+          "<thead><tr><th>Invoice</th><th>Guest</th><th>Method</th><th>Date</th><th>Amount</th></tr></thead><tbody>" +
+          (s.recentPayments.length
+            ? s.recentPayments.map(function (p) {
+                return "<tr><td>" + esc(p.invoice_number || "—") + "</td><td>" + esc(p.guest_name || "—") + "</td><td>" + esc(p.method) + "</td><td>" + dstr(p.received_at) + "</td><td><strong>" + money(p.amount) + "</strong></td></tr>";
+              }).join("")
+            : '<tr><td colspan="5" class="empty">No payments yet.</td></tr>') +
+          "</tbody></table></div></div>";
+      }
+
+      async function viewReservations() {
+        var data = await api("/api/reservations");
+        var rows = data.items || [];
+        var PAY_LABEL = { pay_on_arrival: "On arrival", mobile_money: "Mobile Money", card: "Card", bank: "Bank" };
+        content.innerHTML =
+          '<div class="topbar"><h1>Reservations</h1><button class="btn" id="newRes">+ New reservation</button></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr>' +
+          "<th>Ref</th><th>Guest</th><th>Room</th><th>Stay</th><th>Nights</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th>" +
+          "</tr></thead><tbody>" +
+          (rows.length
+            ? rows.map(function (r) {
+                var nights = Math.max(1, Math.round((new Date(r.check_out) - new Date(r.check_in)) / 86400000));
+                return (
+                  "<tr>" +
+                  "<td><small style='color:var(--muted);'>" + esc(r.confirmation_code || "RES-" + String(r.id).padStart(4, "0")) + "</small></td>" +
+                  "<td><strong>" + esc(r.guest_name) + "</strong>" + (r.guest_phone ? "<br><small>" + esc(r.guest_phone) + "</small>" : "") + "</td>" +
+                  "<td>" + esc(r.room_name) + "</td>" +
+                  "<td>" + dstr(r.check_in) + " → " + dstr(r.check_out) + "</td>" +
+                  "<td>" + nights + "</td>" +
+                  "<td>" + money(nights * r.rate_per_night) + "</td>" +
+                  "<td>" + esc(PAY_LABEL[r.payment_method] || r.payment_method || "—") + (r.payment_phone ? "<br><small>" + esc(r.payment_phone) + "</small>" : "") + "</td>" +
+                  "<td>" + badge(r.status) +
+                    (r.expires_at ? '<br><small style="color:#b45309;font-weight:600;font-size:0.72rem;">Held until ' + esc(dstr(r.expires_at)) + "</small>" : "") +
+                  "</td>" +
+                  "<td><div class='actions'>" +
+                  (r.status === "confirmed" && r.confirmation_code ? '<button class="btn small" data-cashpay="' + esc(r.confirmation_code) + '">Cash</button>' : "") +
+                  (r.status === "confirmed" ? '<button class="btn small" data-act="checkin" data-id="' + r.id + '">Check in</button>' : "") +
+                  (r.status === "checked_in" ? '<button class="btn small" data-act="checkout" data-id="' + r.id + '">Check out</button>' : "") +
+                  (r.status === "confirmed" || r.status === "checked_in" ? '<button class="btn small ghost" data-act="cancel" data-id="' + r.id + '">Cancel</button>' : "") +
+                  '<a class="btn small ghost" href="/pay?ref=' + esc(r.confirmation_code || ("RES-" + String(r.id).padStart(4, "0"))) + '" target="_blank" rel="noopener">Pay link</a>' +
+                  '<a class="btn small ghost" href="/api/booking?action=receipt-pdf&ref=' + esc(r.confirmation_code || ("RES-" + String(r.id).padStart(4, "0"))) + '" target="_blank" rel="noopener">Receipt PDF</a>' +
+                  '<button class="btn small ghost" data-act="edit" data-id="' + r.id + '">Edit</button>' +
+                  '<button class="btn small warn" data-act="del" data-id="' + r.id + '">Delete</button>' +
+                  "</div></td></tr>"
+                );
+              }).join("")
+            : '<tr><td colspan="9" class="empty">No reservations yet. Click “New reservation” to book a room.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newRes").onclick = function () {
+          openReservationModal(null, rows);
+        };
+      }
+
+      async function openReservationModal(edit, rows) {
+        var guests = (await api("/api/catalog?resource=guests")).items || [];
+        var rooms = (await api("/api/catalog?resource=rooms")).items || [];
+        var fields = [
+          { name: "guestId", label: "Guest", type: "select", options: guests.map(function (g) { return { value: g.id, label: g.name + (g.phone ? " — " + g.phone : "") }; }), value: edit ? edit.guest_id : "" },
+          { name: "roomId", label: "Room", type: "select", options: rooms.map(function (r) { return { value: r.id, label: r.name + " — " + r.type + " (" + money(r.rate_per_night) + "/night)" }; }), value: edit ? edit.room_id : "" },
+          { name: "checkIn", label: "Check-in", type: "date", value: edit ? edit.check_in : new Date().toISOString().slice(0, 10), required: true },
+          { name: "checkOut", label: "Check-out", type: "date", value: edit ? edit.check_out : "", required: true },
+          { name: "adults", label: "Adults", type: "number", value: edit ? edit.adults : 1 },
+          { name: "children", label: "Children", type: "number", value: edit ? edit.children : 0 },
+          { name: "notes", label: "Notes", type: "textarea", value: edit ? edit.notes || "" : "" },
+        ];
+        openModal(edit ? "Edit reservation" : "New reservation", "Pick a guest, room, and stay dates.", fields, async function (v) {
+          var body = { guestId: v.guestId, roomId: v.roomId, checkIn: v.checkIn, checkOut: v.checkOut, adults: v.adults, children: v.children, notes: v.notes };
+          if (edit) {
+            body.id = edit.id;
+            await api("/api/reservations", { method: "PUT", body: body });
+            toast("Reservation updated.");
+          } else {
+            await api("/api/reservations", { method: "POST", body: body });
+            toast("Reservation created.");
+          }
+        }, edit ? "Save changes" : "Create reservation");
+      }
+
+      async function reservationAction(id, action) {
+        if (action === "del" && !confirm("Delete this reservation permanently?")) return;
+        if (action === "cancel") {
+          openModal("Cancel booking", "The room will be released immediately. If the guest already paid, arrange a refund separately.", [
+            { name: "reason", label: "Reason for cancellation", type: "textarea", value: "", required: true },
+          ], async function (v) {
+            await api("/api/reservations?id=" + id + "&action=cancel", { method: "POST", body: { reason: v.reason } });
+            toast("Booking cancelled — room released.");
+            go("reservations");
+          }, "Cancel booking");
+          return;
+        }
+        try {
+          if (action === "del") await api("/api/reservations?id=" + id, { method: "DELETE" });
+          else await api("/api/reservations?id=" + id + "&action=" + action, { method: "POST", body: {} });
+          toast(action === "del" ? "Deleted." : "Reservation " + action + ".");
+          go("reservations");
+        } catch (e) { toast(e.message || "Failed", true); }
+      }
+
+      async function viewRooms() {
+        var data = await api("/api/catalog?resource=rooms");
+        var rows = data.items || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Rooms</h1><button class="btn" id="newRoom">+ Add room</button></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Room</th><th>Type</th><th>Rate / night</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+          (rows.length
+            ? rows.map(function (r) {
+                return "<tr><td><strong>" + esc(r.name) + "</strong></td><td>" + esc(r.type) + "</td><td>" + money(r.rate_per_night) + "</td><td>" + r.capacity + "</td><td>" + badge(r.status) + "</td><td><div class='actions'><button class='btn small ghost' data-act='edit' data-id='" + r.id + "'>Edit</button><button class='btn small warn' data-act='del' data-id='" + r.id + "'>Delete</button></div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="6" class="empty">No rooms yet — add your first room.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newRoom").onclick = function () { openRoomModal(null); };
+      }
+
+      function openRoomModal(edit) {
+        var media = edit
+          ? edit.media && edit.media.length
+            ? edit.media
+            : edit.image_url
+              ? [{ type: "image", url: edit.image_url }]
+              : []
+          : [];
+        var option = function (v, l, sel) { return '<option value="' + v + '"' + (sel ? " selected" : "") + ">" + l + "</option>"; };
+        var html =
+          '<div class="row">' +
+          '<div class="field"><label>Room name / number</label><input id="f_name" value="' + esc(edit ? edit.name : "") + '" required /></div>' +
+          '<div class="field"><label>Type</label><select id="f_type">' +
+          ["Single", "Double", "Twin", "Family", "Suite", "Dormitory"].map(function (t) { return option(t, t, edit && edit.type === t); }).join("") +
+          "</select></div></div>" +
+          '<div class="row">' +
+          '<div class="field"><label>Rate / night (UGX)</label><input id="f_ratePerNight" type="number" value="' + esc(edit ? edit.rate_per_night : "") + '" required /></div>' +
+          '<div class="field"><label>Capacity</label><input id="f_capacity" type="number" value="' + esc(edit ? edit.capacity : 1) + '" /></div>' +
+          "</div>" +
+          '<div class="row">' +
+          '<div class="field"><label>Status</label><select id="f_status">' +
+          [["available", "Available"], ["occupied", "Occupied"], ["dirty", "Dirty"], ["cleaning", "Cleaning"], ["maintenance", "Maintenance"], ["out_of_order", "Out of order"]]
+            .map(function (s) { return option(s[0], s[1], edit ? edit.status === s[0] : s[0] === "available"); }).join("") +
+          "</select></div>" +
+          '<div class="field"><label>Rating (0–10)</label><input id="f_rating" type="number" value="' + esc(edit ? edit.rating : 8.5) + '" /></div>' +
+          "</div>" +
+          '<div class="row">' +
+          '<div class="field"><label>Review count</label><input id="f_reviews" type="number" value="' + esc(edit ? edit.reviews || 0 : 0) + '" /></div>' +
+          '<div class="field"><label>Notes</label><input id="f_notes" value="' + esc(edit ? edit.notes || "" : "") + '" /></div>' +
+          "</div>" +
+          '<div class="field"><label>Photos &amp; videos</label><div id="roomMedia"></div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">' +
+          '<button class="btn small ghost" type="button" id="addMediaUrl">+ Add media URL</button>' +
+          '<button class="btn small" type="button" id="uploadMediaBtn">Upload image / video</button>' +
+          '<input type="file" id="uploadMediaInput" accept="image/*,video/*" style="display:none;" />' +
+          "</div></div>";
+        openModal(edit ? "Edit room" : "Add room", "Photos and videos appear on the booking page.", [], null, edit ? "Save changes" : "Add room");
+        document.getElementById("modalBody").innerHTML = html;
+        modalOnSubmit = async function () {
+          var body = {
+            name: document.getElementById("f_name").value,
+            type: document.getElementById("f_type").value,
+            ratePerNight: document.getElementById("f_ratePerNight").value,
+            capacity: document.getElementById("f_capacity").value,
+            status: document.getElementById("f_status").value,
+            rating: document.getElementById("f_rating").value,
+            reviews: document.getElementById("f_reviews").value,
+            notes: document.getElementById("f_notes").value,
+            media: collectMedia(),
+          };
+          if (!body.name.trim() || !body.ratePerNight) throw new Error("Room name and nightly rate are required.");
+          if (edit) { body.id = edit.id; await api("/api/catalog?resource=rooms", { method: "PUT", body: body }); toast("Room updated."); }
+          else { await api("/api/catalog?resource=rooms", { method: "POST", body: body }); toast("Room added."); }
+        };
+        renderMedia(media);
+        document.getElementById("addMediaUrl").onclick = function () { addMediaRow({ type: "image", url: "" }); };
+        document.getElementById("uploadMediaBtn").onclick = function () { document.getElementById("uploadMediaInput").click(); };
+        document.getElementById("uploadMediaInput").onchange = async function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var btn = document.getElementById("uploadMediaBtn");
+          btn.disabled = true;
+          btn.textContent = "Uploading…";
+          try {
+            var url = await uploadFile(file);
+            addMediaRow({ type: file.type.indexOf("video/") === 0 ? "video" : "image", url: url });
+            toast("Uploaded.");
+          } catch (err) {
+            toast(err.message, true);
+          }
+          btn.disabled = false;
+          btn.textContent = "Upload image / video";
+          e.target.value = "";
+        };
+      }
+
+      function uploadFile(file) {
+        return fetch(
+          "/api/upload?name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent(file.type),
+          { method: "POST", body: file },
+        )
+          .then(function (res) {
+            return res.json().then(function (json) {
+              if (!res.ok) throw new Error(json.error || "Upload failed");
+              return json.url;
+            });
+          });
+      }
+
+      function addMediaRow(item) {
+        var wrap = document.getElementById("roomMedia");
+        var placeholder = wrap.querySelector(".empty");
+        if (placeholder) placeholder.remove();
+        var row = document.createElement("div");
+        row.className = "media-row";
+        row.style.cssText = "display:flex;gap:8px;align-items:center;margin-bottom:8px;";
+        var typeSel = document.createElement("select");
+        typeSel.innerHTML = '<option value="image">Image</option><option value="video">Video</option>';
+        typeSel.value = item.type === "video" ? "video" : "image";
+        var urlInput = document.createElement("input");
+        urlInput.value = item.url || "";
+        urlInput.placeholder = "Paste image or video URL";
+        urlInput.style.flex = "1";
+        var preview = document.createElement("span");
+        preview.style.cssText = "width:46px;height:38px;overflow:hidden;border-radius:6px;background:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;";
+        function updatePreview() {
+          var u = urlInput.value.trim();
+          if (!u) { preview.innerHTML = ""; return; }
+          if (typeSel.value === "video") preview.innerHTML = '<video src="' + esc(u) + '" muted style="width:46px;height:38px;object-fit:cover;"></video>';
+          else preview.innerHTML = '<img src="' + esc(u) + '" alt="" style="width:46px;height:38px;object-fit:cover;" />';
+        }
+        typeSel.onchange = updatePreview;
+        urlInput.oninput = updatePreview;
+        updatePreview();
+        var del = document.createElement("button");
+        del.className = "btn small warn";
+        del.type = "button";
+        del.textContent = "Remove";
+        del.onclick = function () {
+          row.remove();
+          var w = document.getElementById("roomMedia");
+          if (!w.querySelector(".media-row")) w.innerHTML = '<p class="empty" style="text-align:left;padding:8px 0;">No media yet — upload or paste a URL.</p>';
+        };
+        row.appendChild(typeSel);
+        row.appendChild(urlInput);
+        row.appendChild(preview);
+        row.appendChild(del);
+        wrap.appendChild(row);
+      }
+
+      function renderMedia(list) {
+        var wrap = document.getElementById("roomMedia");
+        wrap.innerHTML = "";
+        if (!list.length) {
+          wrap.innerHTML = '<p class="empty" style="text-align:left;padding:8px 0;">No media yet — upload or paste a URL.</p>';
+          return;
+        }
+        list.forEach(function (item) { addMediaRow(item); });
+      }
+
+      function collectMedia() {
+        var out = [];
+        document.querySelectorAll("#roomMedia .media-row").forEach(function (row) {
+          var sel = row.querySelector("select");
+          var inp = row.querySelector("input");
+          var url = (inp.value || "").trim();
+          if (url) out.push({ type: sel.value, url: url });
+        });
+        return out;
+      }
+
+      async function viewGuests() {
+        var data = await api("/api/catalog?resource=guests");
+        var rows = data.items || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Guests</h1><button class="btn" id="newGuest">+ Add guest</button></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>ID</th><th>Actions</th></tr></thead><tbody>' +
+          (rows.length
+            ? rows.map(function (g) {
+                return "<tr><td><strong>" + esc(g.name) + "</strong></td><td>" + esc(g.phone || "—") + "</td><td>" + esc(g.email || "—") + "</td><td>" + esc(g.id_number || "—") + "</td><td><div class='actions'><button class='btn small ghost' data-act='edit' data-id='" + g.id + "'>Edit</button><button class='btn small warn' data-act='del' data-id='" + g.id + "'>Delete</button></div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="5" class="empty">No guests yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newGuest").onclick = function () { openGuestModal(null); };
+      }
+
+      function openGuestModal(edit) {
+        openModal(edit ? "Edit guest" : "Add guest", "", [
+          { name: "name", label: "Full name", value: edit ? edit.name : "", required: true },
+          { name: "phone", label: "Phone", value: edit ? edit.phone || "" : "" },
+          { name: "email", label: "Email", type: "email", value: edit ? edit.email || "" : "" },
+          { name: "idNumber", label: "ID / Passport", value: edit ? edit.id_number || "" : "" },
+          { name: "notes", label: "Notes", type: "textarea", value: edit ? edit.notes || "" : "" },
+        ], async function (v) {
+          var body = { name: v.name, phone: v.phone, email: v.email, idNumber: v.idNumber, notes: v.notes };
+          if (edit) { body.id = edit.id; await api("/api/catalog?resource=guests", { method: "PUT", body: body }); toast("Guest updated."); }
+          else { await api("/api/catalog?resource=guests", { method: "POST", body: body }); toast("Guest added."); }
+        });
+      }
+
+      async function viewBilling() {
+        var data = await api("/api/billing");
+        var res = await api("/api/reservations");
+        var inv = data.invoices || [];
+        var pay = data.payments || [];
+        var sum = data.summary || {};
+        var methods = data.byMethod || [];
+        var METHOD_LABEL = { mobile_money: "Mobile Money", card: "Card", bank: "Bank", cash: "Cash", pay_on_arrival: "Pay on arrival", other: "Other" };
+        function stat(label, val) { return '<div class="stat"><div class="label">' + esc(label) + '</div><div class="value">' + money(val) + "</div></div>"; }
+        content.innerHTML =
+          '<div class="topbar"><h1>Billing &amp; Payments</h1><button class="btn" id="genInv">+ Generate invoice</button></div>' +
+          '<div class="stats" style="margin-bottom:14px;">' +
+            stat("Collected today", sum.today) +
+            stat("Last 7 days", sum.week) +
+            stat("This month", sum.month) +
+            stat("All time", sum.all_time) +
+          "</div>" +
+          (methods.length
+            ? '<div class="card" style="margin-bottom:14px;"><h2>By payment method</h2><div class="tablewrap"><table><thead><tr><th>Method</th><th>Payments</th><th style="text-align:right;">Total</th></tr></thead><tbody>' +
+              methods.map(function (m) {
+                return "<tr><td><strong>" + esc(METHOD_LABEL[m.method] || m.method) + "</strong></td><td>" + m.n + "</td><td style='text-align:right;'><strong>" + money(m.total) + "</strong></td></tr>";
+              }).join("") +
+              "</tbody></table></div></div>"
+            : "") +
+          '<div class="tabs"><button id="tabInv" class="active">Invoices</button><button id="tabPay">Payments</button></div>' +
+          '<div id="invPane" class="card"><div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Guest</th><th>Booking ref</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
+          (inv.length
+            ? inv.map(function (i) {
+                var balance = Math.max(0, i.total - i.paid);
+                return "<tr><td><strong>" + esc(i.number) + "</strong></td><td>" + esc(i.guest_name || "—") + "</td><td>" + (i.confirmation_code ? '<strong style="color:var(--blue);">' + esc(i.confirmation_code) + "</strong>" : "—") + "</td><td>" + dstr(i.issue_date) + "</td><td>" + money(i.total) + "</td><td>" + money(i.paid) + "</td><td>" + money(balance) + "</td><td>" + badge(i.status) + "</td><td>" + (balance > 0 ? '<button class="btn small" data-pay="' + i.id + '">Record payment</button>' : '<span style="color:var(--green);font-weight:700;">Settled</span>') + (i.confirmation_code ? ' <a class="btn small ghost" href="/api/booking?action=receipt-pdf&ref=' + esc(i.confirmation_code) + '" target="_blank" rel="noopener">Receipt PDF</a>' : "") + "</td></tr>";
+              }).join("")
+            : '<tr><td colspan="9" class="empty">No invoices yet.</td></tr>') +
+          "</tbody></table></div></div>" +
+          '<div id="payPane" class="card" style="display:none"><div class="tablewrap"><table><thead><tr><th>Date</th><th>Invoice</th><th>Guest</th><th>Method</th><th>Reference</th><th>Amount</th></tr></thead><tbody>' +
+          (pay.length
+            ? pay.map(function (p) {
+                return "<tr><td>" + dstr(p.received_at) + "</td><td>" + esc(p.invoice_number || "—") + "</td><td>" + esc(p.guest_name || "—") + "</td><td>" + esc(p.method) + "</td><td>" + esc(p.reference || "—") + "</td><td><strong>" + money(p.amount) + "</strong></td></tr>";
+              }).join("")
+            : '<tr><td colspan="6" class="empty">No payments yet.</td></tr>') +
+          "</tbody></table></div></div>";
+
+        document.getElementById("genInv").onclick = function () {
+          openModal("Generate invoice", "Choose a reservation — existing invoices are not duplicated.", [
+            { name: "reservationId", label: "Reservation", type: "select", options: (res.items || []).map(function (r) { return { value: r.id, label: r.guest_name + " — " + r.room_name + " (" + dstr(r.check_in) + " → " + dstr(r.check_out) + ")" }; }) },
+          ], async function (v) {
+            await api("/api/billing?action=invoice", { method: "POST", body: { reservationId: v.reservationId } });
+            toast("Invoice created.");
+          }, "Generate invoice");
+        };
+        document.getElementById("tabInv").onclick = function () {
+          this.classList.add("active"); document.getElementById("tabPay").classList.remove("active");
+          document.getElementById("invPane").style.display = ""; document.getElementById("payPane").style.display = "none";
+        };
+        document.getElementById("tabPay").onclick = function () {
+          this.classList.add("active"); document.getElementById("tabInv").classList.remove("active");
+          document.getElementById("payPane").style.display = ""; document.getElementById("invPane").style.display = "none";
+        };
+      }
+
+      async function viewInventory() {
+        var data = await api("/api/catalog?resource=inventory");
+        var rows = data.items || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Inventory</h1><button class="btn" id="newItem">+ Add item</button></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Item</th><th>Category</th><th>On hand</th><th>Unit</th><th>Reorder at</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+          (rows.length
+            ? rows.map(function (i) {
+                var low = i.quantity <= i.reorder_level;
+                return "<tr><td><strong>" + esc(i.name) + "</strong></td><td>" + esc(i.category) + "</td><td><strong>" + i.quantity + "</strong></td><td>" + esc(i.unit) + "</td><td>" + i.reorder_level + "</td><td>" + (low ? badge("low", "Low stock") : badge("ok", "In stock")) + "</td><td><div class='actions'><button class='btn small' data-adj='" + i.id + "' data-d='-10'>−10</button><button class='btn small' data-adj='" + i.id + "' data-d='10'>+10</button><button class='btn small ghost' data-act='edit' data-id='" + i.id + "'>Edit</button><button class='btn small warn' data-act='del' data-id='" + i.id + "'>Delete</button></div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="7" class="empty">No inventory items yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newItem").onclick = function () { openItemModal(null); };
+      }
+
+      function openItemModal(edit) {
+        openModal(edit ? "Edit item" : "Add inventory item", "", [
+          { name: "name", label: "Item name", value: edit ? edit.name : "", required: true },
+          { name: "category", label: "Category", type: "select", options: ["Linen", "Toiletries", "Beverages", "Food", "Cleaning", "Stationery", "General"].map(function (c) { return { value: c, label: c }; }), value: edit ? edit.category : "General" },
+          { name: "quantity", label: "Quantity", type: "number", value: edit ? edit.quantity : 0 },
+          { name: "unit", label: "Unit", value: edit ? edit.unit : "pcs" },
+          { name: "reorderLevel", label: "Reorder at", type: "number", value: edit ? edit.reorder_level : 0 },
+          { name: "notes", label: "Notes", type: "textarea", value: edit ? edit.notes || "" : "" },
+        ], async function (v) {
+          var body = { name: v.name, category: v.category, quantity: v.quantity, unit: v.unit, reorderLevel: v.reorderLevel, notes: v.notes };
+          if (edit) { body.id = edit.id; await api("/api/catalog?resource=inventory", { method: "PUT", body: body }); toast("Item updated."); }
+          else { await api("/api/catalog?resource=inventory", { method: "POST", body: body }); toast("Item added."); }
+        });
+      }
+
+      async function viewStaff() {
+        var data = await api("/api/catalog?resource=staff");
+        var roles = (await api("/api/catalog?resource=roles")).items || [];
+        var rows = data.items || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Staff</h1><div style="display:flex;gap:8px;"><button class="btn" id="manageRoles">Manage roles</button><button class="btn" id="newStaff">+ Add staff</button></div></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Pay phone</th><th>Salary / month</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+          (rows.length
+            ? rows.map(function (s) {
+                return "<tr><td><strong>" + esc(s.name) + "</strong></td><td>" + esc(s.role) + "</td><td>" + esc(s.phone || "—") + "</td><td>" + esc(s.payment_phone || "—") + "</td><td>" + (s.salary > 0 ? money(s.salary) : "—") + "</td><td>" + (s.active ? badge("ok", "Active") : badge("cancelled", "Inactive")) + "</td><td><div class='actions'><button class='btn small ghost' data-act='edit' data-id='" + s.id + "'>Edit</button><button class='btn small warn' data-act='del' data-id='" + s.id + "'>Delete</button></div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="7" class="empty">No staff on record yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newStaff").onclick = function () { openStaffModal(null, roles); };
+        document.getElementById("manageRoles").onclick = function () { openRolesModal(); };
+      }
+
+      function openStaffModal(edit, roles) {
+        var roleOptions = (roles && roles.length ? roles : [{ name: "General Staff" }]).map(function (r) { return { value: r.name, label: r.name }; });
+        openModal(edit ? "Edit staff" : "Add staff", "", [
+          { name: "name", label: "Full name", value: edit ? edit.name : "", required: true },
+          { name: "role", label: "Role", type: "select", options: roleOptions, value: edit ? edit.role : "General Staff" },
+          { name: "phone", label: "Phone", value: edit ? edit.phone || "" : "" },
+          { name: "paymentPhone", label: "Payment phone (Mobile Money)", value: edit ? edit.payment_phone || "" : "" },
+          { name: "salary", label: "Monthly salary (UGX)", type: "number", value: edit ? edit.salary || 0 : 0 },
+          { name: "active", label: "Active staff member", type: "checkbox", value: edit ? edit.active : true },
+          { name: "notes", label: "Notes", type: "textarea", value: edit ? edit.notes || "" : "" },
+        ], async function (v) {
+          var body = { name: v.name, role: v.role, phone: v.phone, paymentPhone: v.paymentPhone, salary: v.salary, active: !!v.active, notes: v.notes };
+          if (edit) { body.id = edit.id; await api("/api/catalog?resource=staff", { method: "PUT", body: body }); toast("Staff updated."); }
+          else { await api("/api/catalog?resource=staff", { method: "POST", body: body }); toast("Staff added."); }
+        });
+      }
+
+      function openRolesModal() {
+        api("/api/catalog?resource=roles").then(function (data) {
+          var roles = data.items || [];
+          openModal("Manage staff roles", "Add new roles (e.g. Cleaner, Waiter, Gardener) — staff can then be assigned them.", [
+            { name: "name", label: "New role name", value: "", required: true },
+          ], async function (v) {
+            await api("/api/catalog?resource=roles&action=add", { method: "POST", body: { name: v.name } });
+            toast("Role added.");
+            openRolesModal();
+          }, "Add role");
+          var body = document.getElementById("modalBody");
+          if (body && roles.length) {
+            body.insertAdjacentHTML("beforeend",
+              '<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;"><strong style="font-size:0.85rem;">Existing roles</strong>' +
+              roles.map(function (r) {
+                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line);">' +
+                  '<span>' + esc(r.name) + (Number(r.usage_count) > 0 ? ' <small style="color:var(--muted);">(' + r.usage_count + ' staff)</small>' : "") + "</span>" +
+                  '<button class="btn small warn" data-role-del="' + r.id + '" data-name="' + esc(r.name) + '" ' + (Number(r.usage_count) > 0 ? "disabled" : "") + ">Delete</button>" +
+                  "</div>";
+              }).join("") + "</div>");
+            body.querySelectorAll("[data-role-del]").forEach(function (b) {
+              b.addEventListener("click", async function () {
+                await api("/api/catalog?resource=roles&id=" + this.getAttribute("data-role-del"), { method: "DELETE" });
+                toast("Role deleted.");
+                openRolesModal();
+              });
+            });
+          }
+        });
+      }
+
+      async function viewNotifications() {
+        var data = await api("/api/notifications");
+        var rows = data.items || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>SMS Notifications</h1><button class="btn" id="sendSms">+ Send SMS</button></div>' +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Date</th><th>Recipient</th><th>Phone</th><th>Type</th><th>Message</th><th>Status</th></tr></thead><tbody>' +
+          (rows.length
+            ? rows.map(function (n) {
+                return "<tr><td>" + dstr(n.created_at) + "</td><td><strong>" + esc(n.recipient) + "</strong></td><td>" + esc(n.phone || "—") + "</td><td>" + esc(n.type) + "</td><td style='max-width:300px'>" + esc(n.message) + "</td><td>" + badge(n.status) + (n.error ? "<br><small title='" + esc(n.error) + "'>" + esc(n.error).slice(0, 40) + "…</small>" : "") + "</td></tr>";
+              }).join("")
+            : '<tr><td colspan="6" class="empty">No messages yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("sendSms").onclick = function () {
+          var templates = {
+            confirmation: "Hello {name}, your reservation at ZNoah Guest House is confirmed. We look forward to welcoming you!",
+            reminder: "Hi {name}, this is a friendly reminder about your upcoming stay at ZNoah Guest House.",
+            receipt: "Hi {name}, thank you for your payment. Your receipt has been recorded at ZNoah Guest House.",
+            general: "Hello {name}, thank you for choosing ZNoah Guest House!",
+          };
+          openModal("Send SMS", "Choose a template or write your own message.", [
+            { name: "recipient", label: "Recipient name", value: "", required: true },
+            { name: "phone", label: "Phone number", value: "" },
+            { name: "type", label: "Type", type: "select", options: Object.keys(templates).map(function (t) { return { value: t, label: t }; }), value: "confirmation" },
+            { name: "message", label: "Message", type: "textarea", value: templates.confirmation },
+          ], async function (v) {
+            await api("/api/notifications", { method: "POST", body: v });
+            toast("SMS " + v.phone ? "sent." : "logged (provider not configured).");
+          }, "Send SMS");
+          var typeSel = document.getElementById("f_type");
+          if (typeSel) {
+            typeSel.onchange = function () { document.getElementById("f_message").value = templates[this.value]; };
+          }
+        };
+      }
+
+      async function viewReports() {
+        var data = await api("/api/reports");
+        var maxMonth = 1, maxMethod = 1;
+        data.revenueByMonth.forEach(function (m) { if (m.total > maxMonth) maxMonth = m.total; });
+        data.paymentsByMethod.forEach(function (m) { if (m.total > maxMethod) maxMethod = m.total; });
+        var totalRevenue = data.revenueByMonth.reduce(function (s, m) { return s + m.total; }, 0);
+        content.innerHTML =
+          '<div class="topbar"><h1>Financial Reports</h1></div>' +
+          '<div class="stats">' +
+          stat("Total revenue (12 mo)", money(totalRevenue)) +
+          stat("Occupancy rate", data.occupancyRate + "%") +
+          stat("ADR (avg daily rate)", money(data.adr)) +
+          stat("RevPAR", money(data.revpar)) +
+          "</div>" +
+          '<div class="card"><h2>Revenue by month</h2><div class="bars">' +
+          data.revenueByMonth.map(function (m) {
+            return '<div class="bar" style="height:' + Math.max(3, Math.round((m.total / maxMonth) * 100)) + '%" title="' + m.month + " — " + money(m.total) + '"></div>';
+          }).join("") +
+          '</div><div class="bar-label">' + data.revenueByMonth.map(function (m) { return "<span>" + m.month.slice(5) + "</span>"; }).join("") + "</div></div>" +
+          '<div class="card"><h2>Payments by method</h2>' +
+          (data.paymentsByMethod.length
+            ? '<div class="tablewrap"><table><thead><tr><th>Method</th><th>Amount</th><th>Count</th></tr></thead><tbody>' +
+              data.paymentsByMethod.map(function (m) { return "<tr><td>" + esc(m.method) + "</td><td>" + money(m.total) + "</td><td>" + m.count + "</td></tr>"; }).join("") +
+              "</tbody></table></div>"
+            : '<p class="empty">No payments yet.</p>') +
+          "</div>" +
+          '<div class="card"><h2>Reservations by status</h2>' +
+          (data.reservationsByStatus.length
+            ? data.reservationsByStatus.map(function (s) { return badge(s.status, s.status + " (" + s.count + ")"); }).join(" ")
+            : '<p class="empty">No reservations yet.</p>') +
+          "</div>" +
+          '<div class="card"><h2>Revenue by source</h2>' +
+          (data.revenueBySource && data.revenueBySource.length
+            ? '<div class="tablewrap"><table><thead><tr><th>Source</th><th>Amount</th><th>Count</th></tr></thead><tbody>' +
+              data.revenueBySource.map(function (s) { return "<tr><td>" + esc(s.source) + "</td><td>" + money(s.total) + "</td><td>" + s.count + "</td></tr>"; }).join("") +
+              "</tbody></table></div>"
+            : '<p class="empty">No payment data yet.</p>') +
+          "</div>" +
+          '<div class="card"><h2>Upcoming arrivals (7 days)</h2>' +
+          (data.upcomingArrivals.length
+            ? '<div class="tablewrap"><table><thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Check-in</th></tr></thead><tbody>' +
+              data.upcomingArrivals.map(function (a) { return "<tr><td>" + esc(a.confirmation_code || "—") + "</td><td>" + esc(a.guest_name || "—") + "</td><td>" + esc(a.room_name || "—") + "</td><td>" + dstr(a.check_in) + "</td></tr>"; }).join("") +
+              "</tbody></table></div>"
+            : '<p class="empty">No arrivals in the next 7 days.</p>') +
+          "</div>" +
+          '<div class="card"><h2>Upcoming departures (2 days)</h2>' +
+          (data.upcomingDepartures.length
+            ? '<div class="tablewrap"><table><thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Check-out</th></tr></thead><tbody>' +
+              data.upcomingDepartures.map(function (d) { return "<tr><td>" + esc(d.confirmation_code || "—") + "</td><td>" + esc(d.guest_name || "—") + "</td><td>" + esc(d.room_name || "—") + "</td><td>" + dstr(d.check_out) + "</td></tr>"; }).join("") +
+              "</tbody></table></div>"
+            : '<p class="empty">No departures in the next 2 days.</p>') +
+          "</div>";
+      }
+
+      function openPaymentModal(inv, methodDefault) {
+        var balance = Math.max(0, inv.total - inv.paid);
+        openModal("Record payment — " + inv.number, "Total " + money(inv.total) + " · Paid " + money(inv.paid) + (inv.confirmation_code ? " · Booking ref: " + inv.confirmation_code : ""), [
+          { name: "invoiceId", label: "Invoice", type: "hidden", value: inv.id },
+          { name: "amount", label: "Amount received (UGX)", type: "number", value: balance || "", required: true },
+          { name: "method", label: "Method", type: "select", options: ["cash", "mobile_money", "card", "bank"].map(function (m) { return { value: m, label: m.replace("_", " ") }; }), value: methodDefault || "cash" },
+          { name: "reference", label: "Reference", value: inv.confirmation_code ? "CASH-" + inv.confirmation_code : "" },
+          { name: "receivedAt", label: "Date received", type: "date", value: new Date().toISOString().slice(0, 10) },
+          { name: "notes", label: "Notes", type: "textarea", value: "" },
+        ], async function (v) {
+          var r = await api("/api/billing?action=payment", { method: "POST", body: v });
+          toast("Payment recorded — receipt ready.");
+          go(currentView);
+          var box = document.getElementById("modalBody");
+          var sub = document.getElementById("modalSub");
+          var save = document.getElementById("modalSave");
+          var cancel = document.getElementById("modalCancel");
+          if (box && r && r.receiptUrl) {
+            box.innerHTML = '<div style="text-align:center;padding:8px 0;">' +
+              '<div style="font-size:1.7rem;">✅</div>' +
+              '<p style="margin-top:8px;font-weight:800;">Payment recorded — receipt ready</p>' +
+              '<p style="color:var(--muted);font-size:0.85rem;margin-top:4px;">Booking ref: <strong style="color:var(--ink);">' + esc(inv.confirmation_code || "—") + '</strong></p>' +
+              '<a class="btn" href="' + r.receiptUrl + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;text-decoration:none;">Open Receipt PDF</a>' +
+              "</div>";
+            sub.textContent = "";
+            if (save) save.style.display = "none";
+            if (cancel) cancel.textContent = "Done";
+          }
+        }, "Record payment");
+      }
+
+      /* ---------- Delegated actions ---------- */
+      content.addEventListener("click", function (e) {
+        var t = e.target.closest("button");
+        if (!t) return;
+        var id = t.getAttribute("data-id");
+        var act = t.getAttribute("data-act");
+        var pay = t.getAttribute("data-pay");
+        var cashPay = t.getAttribute("data-cashpay");
+        var resetPwd = t.getAttribute("data-resetpwd");
+        var impersonate = t.getAttribute("data-impersonate");
+        var adj = t.getAttribute("data-adj");
+        var done = t.getAttribute("data-done");
+        var photo = t.getAttribute("data-photo");
+
+        if (resetPwd) {
+          openModal("Reset password — " + (t.getAttribute("data-name") || ""), "Set a new password for this user.", [
+            { name: "password", label: "New password", type: "password", value: "", required: true },
+            { name: "forceChange", label: "Require change at next login", type: "checkbox", value: true },
+          ], async function (v) {
+            await api("/api/auth?action=reset-password", { method: "POST", body: { id: Number(resetPwd), password: v.password, forceChange: !!v.forceChange } });
+            toast("Password reset.");
+          }, "Reset password");
+          return;
+        }
+        if (impersonate) {
+          openModal("Sign in as " + (t.getAttribute("data-name") || "user"), "Opens the console as this user so you can recover their account. The action is recorded in notifications.", [
+            { name: "note", label: "Reason", type: "textarea", value: "Forgot login", required: true },
+          ], async function () {
+            await api("/api/auth?action=impersonate", { method: "POST", body: { id: Number(impersonate) } });
+            window.location.href = "/console";
+          }, "Sign in as");
+          return;
+        }
+
+        if (done) {
+          api("/api/housekeeping?action=complete", { method: "POST", body: { id: Number(done) } })
+            .then(function () { toast("Task completed."); go("housekeeping"); })
+            .catch(function (err) { toast(err.message, true); });
+          return;
+        }
+        if (photo) {
+          var photoInput = content.querySelector('[data-photo-input="' + photo + '"]');
+          if (photoInput) photoInput.click();
+          return;
+        }
+
+        if (adj) {
+          api("/api/catalog?resource=inventory&action=adjust", { method: "POST", body: { id: Number(adj), delta: Number(t.getAttribute("data-d")) } })
+            .then(function () { toast("Stock adjusted."); go("inventory"); })
+            .catch(function (err) { toast(err.message, true); });
+          return;
+        }
+        if (pay || cashPay) {
+          api("/api/billing").then(function (data) {
+            var inv = pay
+              ? (data.invoices || []).filter(function (i) { return i.id === Number(pay); })[0]
+              : (data.invoices || []).filter(function (i) { return i.confirmation_code === cashPay; })[0];
+            if (!inv) return;
+            openPaymentModal(inv, "cash");
+          }).catch(function (err) { toast(err.message, true); });
+          return;
+        }
+        if (act === "edit") {
+          if (currentView === "reservations") {
+            api("/api/reservations").then(function (data) {
+              var r = (data.items || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openReservationModal(r);
+            });
+          } else if (currentView === "rooms") {
+            api("/api/catalog?resource=rooms").then(function (data) {
+              var r = (data.items || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openRoomModal(r);
+            });
+          } else if (currentView === "guests") {
+            api("/api/catalog?resource=guests").then(function (data) {
+              var r = (data.items || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openGuestModal(r);
+            });
+          } else if (currentView === "inventory") {
+            api("/api/catalog?resource=inventory").then(function (data) {
+              var r = (data.items || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openItemModal(r);
+            });
+          } else if (currentView === "staff") {
+            api("/api/catalog?resource=staff").then(function (data) {
+              var r = (data.items || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openStaffModal(r);
+            });
+          } else if (currentView === "users") {
+            api("/api/auth?action=users").then(function (data) {
+              var r = (data.users || []).filter(function (x) { return x.id === Number(id); })[0];
+              if (r) openUserModal(r);
+            });
+          }
+          return;
+        }
+        if (act === "del") {
+          if (currentView === "users") {
+            if (!confirm("Delete this user?")) return;
+            api("/api/auth?action=user-delete", { method: "POST", body: { id: Number(id) } })
+              .then(function () { toast("User deleted."); go("users"); })
+              .catch(function (err) { toast(err.message, true); });
+            return;
+          }
+          if (!confirm("Delete this item?")) return;
+          var endpoint =
+            currentView === "reservations"
+              ? "/api/reservations?id=" + id
+              : "/api/catalog?resource=" + currentView + "&id=" + id;
+          api(endpoint, { method: "DELETE" }).then(function () { toast("Deleted."); go(currentView); }).catch(function (err) { toast(err.message, true); });
+          return;
+        }
+        if (act === "checkin" || act === "checkout" || act === "cancel") reservationAction(id, act);
+      });
+
+      content.addEventListener("change", async function (e) {
+        var el = e.target;
+        var photoId = el.getAttribute && el.getAttribute("data-photo-input");
+        var assignId = el.getAttribute && el.getAttribute("data-assign");
+        if (el.type === "file" && photoId) {
+          var file = el.files && el.files[0];
+          if (!file) return;
+          try {
+            var url = await uploadFile(file);
+            await api("/api/housekeeping?action=photo", { method: "POST", body: { id: Number(photoId), photoUrl: url } });
+            toast("Photo added.");
+            go("housekeeping");
+          } catch (err) { toast(err.message, true); }
+        } else if (assignId) {
+          try {
+            await api("/api/housekeeping?action=assign", { method: "POST", body: { id: Number(assignId), staffId: Number(el.value) || null } });
+            toast("Assigned.");
+            go("housekeeping");
+          } catch (err) { toast(err.message, true); }
+        }
+      });
+
+      async function viewUsers() {
+        var data = await api("/api/auth?action=users");
+        var rows = data.users || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Users &amp; Access</h1><div style="display:flex;gap:8px;"><button class="btn" id="bulkUsers">Bulk create</button><button class="btn" id="newUser">+ Add user</button></div></div>' +
+          '<div class="card"><p style="color:var(--muted);font-size:0.85rem;margin-bottom:12px;">' +
+          "Owner: full access · Manager: all business modules · Receptionist: dashboard, reservations, guests, billing, notifications" +
+          "</p><div class='tablewrap'><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead><tbody>" +
+          (rows.length
+            ? rows.map(function (u) {
+                return "<tr><td><strong>" + esc(u.name) + "</strong></td><td>" + esc(u.email) + "</td><td>" + badge(u.role, u.role) + (u.must_change_password ? '<br><small style="color:var(--amber);font-weight:700;">must change password</small>' : "") + "</td><td>" + dstr(u.created_at) + "</td><td><div class='actions'><button class='btn small ghost' data-impersonate='" + u.id + "' data-name='" + esc(u.name) + "'>Sign in as</button><button class='btn small ghost' data-resetpwd='" + u.id + "' data-name='" + esc(u.name) + "'>Reset password</button><button class='btn small ghost' data-act='edit' data-id='" + u.id + "'>Edit</button><button class='btn small warn' data-act='del' data-id='" + u.id + "'>Delete</button></div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="5" class="empty">No users yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("newUser").onclick = function () { openUserModal(null); };
+        document.getElementById("bulkUsers").onclick = function () { openBulkUsersModal(); };
+      }
+
+      function openBulkUsersModal() {
+        openModal("Bulk create users", "One user per line: Name, Email, Role (owner, manager, receptionist, housekeeping). Each gets the default password and must change it on first login.", [
+          { name: "lines", label: "Users", type: "textarea", value: "", required: true },
+        ], async function (v) {
+          var users = String(v.lines || "").split(/\r?\n/).map(function (line) {
+            var parts = line.split(",").map(function (p) { return p.trim(); });
+            return { name: parts[0] || "", email: parts[1] || "", role: parts[2] || "" };
+          }).filter(function (u) { return u.name && u.email; });
+          if (!users.length) throw new Error("Enter at least one valid line: Name, Email, Role");
+          var res = await api("/api/auth?action=bulk-create-users", { method: "POST", body: { users: users } });
+          var html = '<div class="card"><h2>Created (' + (res.created || []).length + ")</h2>" +
+            (res.created || []).map(function (u) {
+              return "<p style='padding:6px 0;border-bottom:1px dashed var(--line);'><strong>" + esc(u.name) + "</strong> · " + esc(u.email) + " · " + esc(u.role) + "<br><small style='color:var(--muted);'>Default password: <code>" + esc(u.defaultPassword) + "</code> (must change on first login)</small></p>";
+            }).join("") + "</div>" +
+            ((res.errors || []).length ? '<div class="card"><h2>Skipped (' + res.errors.length + ")</h2>" + res.errors.map(function (e) { return "<p style='font-size:0.85rem;'>" + esc(e.email || e.name || "?") + " — " + esc(e.error) + "</p>"; }).join("") + "</div>" : "");
+          document.getElementById("modalBody").innerHTML = html;
+          document.getElementById("modalSub").textContent = "Share each default password with the staff member securely.";
+          document.getElementById("modalSave").style.display = "none";
+          document.getElementById("modalCancel").textContent = "Done";
+        }, "Create users");
+      }
+
+      function openUserModal(edit) {
+        openModal(edit ? "Edit user" : "Add user", "Who gets access and at which level.", [
+          { name: "name", label: "Full name", value: edit ? edit.name : "", required: true },
+          { name: "email", label: "Email", type: "email", value: edit ? edit.email : "", required: true },
+          edit ? null : { name: "password", label: "Password", type: "password", value: "", required: true },
+          { name: "role", label: "Role", type: "select", options: ["owner", "manager", "receptionist", "housekeeping"].map(function (r) { return { value: r, label: r }; }), value: edit ? edit.role : "receptionist" },
+        ].filter(Boolean), async function (v) {
+          if (edit) {
+            await api("/api/auth?action=user-update", { method: "POST", body: { id: edit.id, name: v.name, role: v.role } });
+            toast("User updated.");
+          } else {
+            await api("/api/auth?action=user-create", { method: "POST", body: { name: v.name, email: v.email, password: v.password, role: v.role } });
+            toast("User created.");
+          }
+        });
+      }
+
+      async function viewHousekeeping() {
+        var data = await api("/api/housekeeping");
+        var isCleaner = currentUser && currentUser.role === "cleaner";
+        var staff = isCleaner ? [] : (await api("/api/catalog?resource=staff")).items || [];
+        var tasks = data.tasks || [];
+        var rooms = data.rooms || [];
+        content.innerHTML =
+          '<div class="topbar"><h1>Housekeeping</h1>' + (isCleaner ? "" : '<button class="btn" id="newTask">+ New task</button>') + "</div>" +
+          '<div class="card"><h2>Room status</h2>' +
+          '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Housekeeping status — rooms with active bookings are marked <strong style="color:#b45309;">Booked</strong>.</p>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          rooms.map(function (r) {
+            var booked = Number(r.active_bookings) > 0;
+            return '<span class="badge b-' + esc(r.status) + '" style="font-size:0.82rem;padding:6px 12px;">' + esc(r.name) + " · " + esc(r.status.replace(/_/g, " ")) +
+              (booked ? ' · <span style="color:#b45309;font-weight:800;">' + r.active_bookings + (r.active_bookings === 1 ? " booking" : " bookings") + (r.next_check_in ? " from " + esc(dstr(r.next_check_in)) : "") + "</span>" : "") +
+              "</span>";
+          }).join("") +
+          "</div></div>" +
+          '<div class="card"><h2>Tasks</h2><div class="tablewrap"><table><thead><tr><th>Room</th><th>Type</th><th>Assigned</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead><tbody>' +
+          (tasks.length
+            ? tasks.map(function (t) {
+                return (
+                  "<tr><td><strong>" + esc(t.room_name || "—") + "</strong></td><td>" + esc(t.task_type) + "</td>" +
+                  (isCleaner
+                    ? "<td>" + esc(t.staff_name || "—") + "</td>"
+                    : "<td><select data-assign='" + t.id + "' style='padding:5px;border:1px solid var(--line);border-radius:7px;'>" +
+                      '<option value="">Unassigned</option>' +
+                      staff.map(function (s) { return '<option value="' + s.id + '"' + (t.assigned_to === s.id ? " selected" : "") + ">" + esc(s.name) + "</option>"; }).join("") +
+                      "</select></td>") +
+                  "<td>" + badge(t.status) + "</td>" +
+                  "<td style='max-width:220px;'>" + esc(t.notes || "") + (t.photo_url ? ' <a href="' + esc(t.photo_url) + '" target="_blank" rel="noopener" style="color:var(--teal-600);font-weight:700;">photo</a>' : "") + "</td>" +
+                  "<td><div class='actions'>" +
+                  (t.status !== "done" ? '<button class="btn small" data-done="' + t.id + '">Complete</button>' : "") +
+                  '<button class="btn small ghost" data-photo="' + t.id + '">Add photo</button>' +
+                  '<input type="file" accept="image/*" style="display:none" data-photo-input="' + t.id + '" />' +
+                  "</div></td></tr>"
+                );
+              }).join("")
+            : '<tr><td colspan="6" class="empty">No tasks yet. Tasks are auto-created when guests check out.</td></tr>') +
+          "</tbody></table></div></div>";
+
+        var nt = document.getElementById("newTask");
+        if (nt) nt.onclick = function () {
+          openModal("New housekeeping task", "Create a cleaning or maintenance task for a room.", [
+            { name: "roomId", label: "Room", type: "select", options: rooms.map(function (r) { return { value: r.id, label: r.name }; }) },
+            { name: "taskType", label: "Task type", type: "select", options: ["cleaning", "maintenance", "restock", "repair"].map(function (t) { return { value: t, label: t }; }), value: "cleaning" },
+            { name: "assignedTo", label: "Assign to", type: "select", options: [{ value: "", label: "Unassigned" }].concat(staff.map(function (s) { return { value: s.id, label: s.name }; })) },
+            { name: "notes", label: "Notes", type: "textarea", value: "" },
+          ], async function (v) {
+            await api("/api/housekeeping", { method: "POST", body: { roomId: v.roomId, taskType: v.taskType, assignedTo: v.assignedTo, notes: v.notes } });
+            toast("Task created.");
+          });
+        };
+      }
+
+      async function viewRepair() {
+        var data = await api("/api/catalog?resource=repair");
+        var counts = data.counts || {};
+        var services = data.services || {};
+        var byStatus = counts.reservationsByStatus || {};
+        var statusChips = Object.keys(byStatus).map(function (s) {
+          return '<span class="badge b-' + esc(s) + '">' + esc(s.replace(/_/g, " ")) + " · " + byStatus[s] + "</span>";
+        }).join(" ");
+        var mtnInfo = services.mtn || {};
+        var svc = function (name, ok, extra) {
+          return '<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:0.9rem;border-bottom:1px dashed var(--line);"><span style="color:var(--muted);">' + esc(name) + '</span><span>' + (ok ? '<span style="color:var(--green);font-weight:700;">ON</span>' : '<span style="color:var(--red);font-weight:700;">OFF</span>') + (extra ? ' <small style="color:var(--muted);">' + esc(extra) + "</small>" : "") + "</span></div>";
+        };
+        content.innerHTML =
+          '<div class="topbar"><h1>System Repair &amp; Maintenance</h1></div>' +
+          '<div class="card"><h2>System health</h2>' +
+          '<p style="font-size:0.85rem;margin-bottom:8px;">' + (data.dbConnected ? '<span style="color:var(--green);font-weight:700;">✓ Database connected</span>' : '<span style="color:var(--red);font-weight:700;">✗ Database unreachable</span>') + "</p>" +
+          svc("MTN Mobile Money", mtnInfo.configured, mtnInfo.sandbox ? "sandbox" : (mtnInfo.configured ? "production" : "")) +
+          svc("Twilio SMS", !!(services.twilio && services.twilio.configured)) +
+          svc("Stripe cards", !!(services.stripe && services.stripe.configured)) +
+          "</div>" +
+          '<div class="card"><h2>Counts</h2><div class="stats">' +
+          '<div class="stat"><div class="label">Rooms</div><div class="value">' + counts.rooms + "</div></div>" +
+          '<div class="stat"><div class="label">Payments recorded</div><div class="value">' + counts.payments + "</div></div>" +
+          '<div class="stat"><div class="label">Expired holds</div><div class="value" style="' + (counts.expiredHolds > 0 ? "color:var(--red);" : "") + '">' + counts.expiredHolds + "</div></div>" +
+          '<div class="stat"><div class="label">Pending MTN</div><div class="value">' + counts.pendingMomo + "</div></div>" +
+          '<div class="stat"><div class="label">Missing invoices</div><div class="value" style="' + (counts.missingInvoices > 0 ? "color:var(--amber);" : "") + '">' + counts.missingInvoices + "</div></div>" +
+          "</div>" +
+          '<p style="font-size:0.82rem;color:var(--muted);margin-top:10px;">Reservations by status: ' + statusChips + "</p>" +
+          "</div>" +
+          '<div class="card"><h2>One-click repairs</h2>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:10px;">' +
+          '<button class="btn" id="repRelease">Release expired holds</button>' +
+          '<button class="btn" id="repMtn">Reconcile MTN payments</button>' +
+          '<button class="btn" id="repInv">Generate missing invoices</button>' +
+          "</div>" +
+          '<p style="font-size:0.85rem;color:var(--muted);margin-top:12px;" id="repResult"></p>' +
+          "</div>";
+        var result = document.getElementById("repResult");
+        function run(url, label) {
+          return async function () {
+            var btn = this;
+            btn.disabled = true;
+            result.textContent = label + "…";
+            try {
+              var r = await api(url, { method: "POST", body: {} });
+              result.textContent = label + " complete." +
+                (r.released != null ? " Released " + r.released + " hold(s)." : "") +
+                (r.reconciled != null ? " Checked " + r.checked + ", reconciled " + r.reconciled + " payment(s)." : "") +
+                (r.created != null ? " Created " + r.created + " invoice(s)." : "") +
+                (r.error ? " " + r.error : "");
+              viewRepair();
+            } catch (e) {
+              result.textContent = label + " failed: " + e.message;
+              btn.disabled = false;
+            }
+          };
+        }
+        document.getElementById("repRelease").addEventListener("click", run("/api/catalog?resource=repair&action=release-expired", "Releasing expired holds"));
+        document.getElementById("repMtn").addEventListener("click", run("/api/catalog?resource=repair&action=reconcile-mtn", "Reconciling MTN payments"));
+        document.getElementById("repInv").addEventListener("click", run("/api/catalog?resource=repair&action=generate-invoices", "Generating missing invoices"));
+      }
+
+      async function viewPayroll() {
+        var data = await api("/api/catalog?resource=payroll");
+        var items = data.items || [];
+        var staff = data.staff || [];
+        var sum = data.summary || {};
+        content.innerHTML =
+          '<div class="topbar"><h1>Payroll</h1><div style="display:flex;gap:8px;"><button class="btn" id="payAll">Pay all pending</button><button class="btn" id="runPayroll">Run payroll</button></div></div>' +
+          '<div class="stats" style="margin-bottom:14px;">' +
+          '<div class="stat"><div class="label">Pending salary</div><div class="value">' + money(sum.pending_total) + "</div></div>" +
+          '<div class="stat"><div class="label">Paid this month</div><div class="value" style="color:var(--green);">' + money(sum.paid_month) + "</div></div>" +
+          '<div class="stat"><div class="label">All time paid</div><div class="value">' + money(sum.paid_all) + "</div></div>" +
+          '<div class="stat"><div class="label">Pending records</div><div class="value">' + (sum.pending_count || 0) + "</div></div>" +
+          "</div>" +
+          '<div class="card"><h2>Staff salaries</h2><div class="tablewrap"><table><thead><tr><th>Name</th><th>Role</th><th>Pay phone</th><th>Salary / month</th></tr></thead><tbody>' +
+          (staff.length
+            ? staff.map(function (s) { return "<tr><td><strong>" + esc(s.name) + "</strong></td><td>" + esc(s.role) + "</td><td>" + esc(s.payment_phone || s.phone || "—") + "</td><td>" + money(s.salary) + "</td></tr>"; }).join("")
+            : '<tr><td colspan="4" class="empty">No staff with a salary set yet. Add salaries in the Staff tab.</td></tr>') +
+          "</tbody></table></div></div>" +
+          '<div class="card"><h2>Salary records</h2><div class="tablewrap"><table><thead><tr><th>Period</th><th>Staff</th><th>Amount</th><th>Reference</th><th>Status</th><th>Paid on</th><th>Actions</th></tr></thead><tbody>' +
+          (items.length
+            ? items.map(function (p) {
+                return "<tr><td>" + esc(p.period) + "</td><td><strong>" + esc(p.staff_name) + "</strong></td><td>" + money(p.amount) + "</td><td>" + esc(p.reference || "—") + "</td><td>" + badge(p.status) + "</td><td>" + (p.paid_at ? dstr(p.paid_at) : "—") + "</td><td><div class='actions'>" +
+                  (p.status === "pending" ? '<button class="btn small" data-payroll-pay="' + p.id + '">Pay</button>' : "") +
+                  '<a class="btn small ghost" href="/api/catalog?resource=payroll&action=payslip-pdf&id=' + p.id + '" target="_blank" rel="noopener">Payslip PDF</a>' +
+                  "</div></td></tr>";
+              }).join("")
+            : '<tr><td colspan="7" class="empty">No salary records yet. Click “Run payroll”.</td></tr>') +
+          "</tbody></table></div></div>";
+        document.getElementById("runPayroll").onclick = function () {
+          openModal("Run payroll", "Creates a pending salary record for every active staff member with a salary for the chosen period.", [
+            { name: "period", label: "Pay period (YYYY-MM)", value: new Date().toISOString().slice(0, 7), required: true },
+          ], async function (v) {
+            var r = await api("/api/catalog?resource=payroll&action=run", { method: "POST", body: { period: v.period } });
+            toast("Payroll run: " + r.created + " created, " + r.skipped + " already pending.");
+          }, "Run payroll");
+        };
+        document.getElementById("payAll").onclick = async function () {
+          var r = await api("/api/catalog?resource=payroll&action=pay", { method: "POST", body: {} });
+          toast(r.paid + " salary payment(s) recorded.");
+          viewPayroll();
+        };
+        var payBtns = content.querySelectorAll("[data-payroll-pay]");
+        for (var i = 0; i < payBtns.length; i++) {
+          payBtns[i].addEventListener("click", async function () {
+            var r = await api("/api/catalog?resource=payroll&action=pay", { method: "POST", body: { ids: [Number(this.getAttribute("data-payroll-pay"))] } });
+            toast(r.paid + " salary payment(s) recorded.");
+            viewPayroll();
+          });
+        }
+      }
+
+      function changePassword(force) {
+        openModal(force ? "Set a new password" : "Change password", force ? "For security, you must change the default password before continuing." : "Enter your current password and choose a new one.", [
+          { name: "currentPassword", label: "Current password", type: "password", value: "", required: true },
+          { name: "newPassword", label: "New password", type: "password", value: "", required: true },
+          { name: "confirm", label: "Confirm new password", type: "password", value: "", required: true },
+        ], async function (v) {
+          if (v.newPassword !== v.confirm) throw new Error("Passwords do not match.");
+          await api("/api/auth?action=change-password", { method: "POST", body: { currentPassword: v.currentPassword, newPassword: v.newPassword } });
+          toast("Password updated.");
+          if (force) { currentUser.must_change_password = false; go(firstView()); }
+        }, "Update password");
+        if (force) document.getElementById("modalCancel").style.display = "none";
+      }
+
+      async function viewAttendance() {
+        var data = await api("/api/catalog?resource=attendance");
+        var self = data.self || {};
+        var today = data.today || null;
+        var records = data.records || [];
+        var sum = data.summary || {};
+        var fullView = data.fullView;
+        var canAdjust = data.canAdjust;
+        var todayText = today
+          ? "Today: in " + eatTimeStr(today.clock_in) + (today.clock_out ? " · out " + eatTimeStr(today.clock_out) + " · " + liveHours(today) : " · on duty " + liveHours(today) + " so far")
+          : "Not clocked in yet today.";
+        if (today && today.note) todayText += " · " + esc(today.note);
+        content.innerHTML =
+          '<div class="topbar"><h1>Staff Attendance</h1></div>' +
+          '<div class="card" style="margin-bottom:14px;"><h2>My attendance — ' + esc(self.staffName || "") + "</h2>" +
+          '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">' +
+          '<button class="btn" id="clockIn" ' + (today ? "disabled" : "") + '>Clock in</button>' +
+          '<button class="btn" id="clockOut" ' + (today && !today.clock_out ? "" : "disabled") + '>Clock out</button>' +
+          "</div>" +
+          '<p style="font-size:0.85rem;color:var(--muted);margin-top:10px;" id="attMsg">' + todayText + "</p>" +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-top:6px;" id="locStatus">Capturing your location automatically…</p>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-top:6px;">Location is captured automatically for clock-in/out — attempts far from the guest house are flagged for review. Sign-out is only allowed from 5:00 PM (or by management adjustment).</p>' +
+          "</div>" +
+          (fullView
+            ? '<div class="stats" style="margin-bottom:14px;">' +
+              '<div class="stat"><div class="label">On duty now</div><div class="value">' + (sum.present_now || 0) + "</div></div>" +
+              '<div class="stat"><div class="label">Today total</div><div class="value">' + (sum.today_total || 0) + "</div></div>" +
+              '<div class="stat"><div class="label">Hours (7 days)</div><div class="value">' + (sum.week_hours || 0) + "</div></div>" +
+              '<div class="stat"><div class="label">Unverified today</div><div class="value" style="' + (Number(sum.today_unverified) > 0 ? "color:var(--red);" : "") + '">' + (sum.today_unverified || 0) + "</div></div>" +
+              "</div>"
+            : "") +
+          '<div class="card"><div class="tablewrap"><table><thead><tr><th>Date</th><th>Staff</th><th>Clock in</th><th>Clock out</th><th>Hours</th><th>Location</th><th>Status</th>' + (canAdjust ? "<th>Actions</th>" : "") + "</tr></thead><tbody>" +
+          (records.length
+            ? records.map(function (r) {
+                var loc = r.location_verified
+                  ? '<span style="color:var(--green);font-weight:700;">Verified</span>'
+                  : '<span style="color:var(--red);font-weight:700;">Flagged' + (r.distance_km ? " (" + r.distance_km + "km)" : "") + "</span>";
+                return "<tr><td>" + esc(r.date) + "</td><td><strong>" + esc(r.staff_name) + "</strong>" + (r.adjusted_by ? "<br><small style='color:var(--muted);'>adjusted by " + esc(r.adjusted_by) + "</small>" : "") + "</td><td>" + eatTimeStr(r.clock_in) + "</td><td>" + eatTimeStr(r.clock_out) + "</td><td>" + liveHours(r) + "</td><td>" + loc + "</td><td>" + badge(r.status) + "</td>" + (canAdjust ? '<td><button class="btn small ghost" data-att-adjust="1" data-sid="' + r.staff_id + '" data-name="' + esc(r.staff_name) + '" data-date="' + esc(r.date) + '">Adjust</button></td>' : "") + "</tr>";
+              }).join("")
+            : '<tr><td colspan="8" class="empty">No attendance records yet.</td></tr>') +
+          "</tbody></table></div></div>";
+        var msg = document.getElementById("attMsg");
+        var lastPos = null;
+        function withLocation(cb) {
+          if (lastPos) { cb(lastPos); return; }
+          if (!navigator.geolocation) { cb(null); return; }
+          navigator.geolocation.getCurrentPosition(
+            function (pos) { lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; cb(lastPos); },
+            function () { cb(null); },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+          );
+        }
+        var locStatus = document.getElementById("locStatus");
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function (pos) {
+              lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+              if (locStatus) locStatus.textContent = "Location captured automatically ✓ — clock-in/out will be verified.";
+            },
+            function () {
+              if (locStatus) locStatus.textContent = "Location could not be captured — enable location on this device for verified clock-in/out.";
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+          );
+        } else if (locStatus) {
+          locStatus.textContent = "This device does not support location — clock-ins will be flagged for review.";
+        }
+        function doClock(action) {
+          withLocation(function (loc) {
+            var body = {};
+            if (loc) { body.lat = loc.lat; body.lng = loc.lng; }
+            api("/api/catalog?resource=attendance&action=" + action, { method: "POST", body: body })
+              .then(function (r) {
+                msg.textContent = (action === "clock-in" ? "Clocked in ✓" : "Clocked out ✓") + (r.warning ? " — " + r.warning : "");
+                viewAttendance();
+              })
+              .catch(function (e) { msg.textContent = e.message; });
+          });
+        }
+        document.getElementById("clockIn").onclick = function () { doClock("clock-in"); };
+        document.getElementById("clockOut").onclick = function () { doClock("clock-out"); };
+        var adjBtns = content.querySelectorAll("[data-att-adjust]");
+        for (var i = 0; i < adjBtns.length; i++) {
+          adjBtns[i].addEventListener("click", function () {
+            openModal("Adjust attendance — " + this.getAttribute("data-name"), "Correct a missed or wrong clock-in/out. The change is recorded with your name.", [
+              { name: "staffId", label: "Staff", type: "hidden", value: this.getAttribute("data-sid") },
+              { name: "date", label: "Date", type: "date", value: this.getAttribute("data-date"), required: true },
+              { name: "clockIn", label: "Clock in (YYYY-MM-DDTHH:MM)", value: "", required: true },
+              { name: "clockOut", label: "Clock out (YYYY-MM-DDTHH:MM)", value: "" },
+              { name: "note", label: "Reason", type: "textarea", value: "" },
+            ], async function (v) {
+              await api("/api/catalog?resource=attendance&action=adjust", { method: "POST", body: v });
+              toast("Attendance adjusted.");
+            }, "Save adjustment");
+          });
+        }
+      }
+
+      async function viewSysadmin() {
+        var data = await api("/api/catalog?resource=attendance");
+        var records = data.records || [];
+        var today = new Date().toISOString().slice(0, 10);
+        var onDuty = records.filter(function (r) { return r.date === today && !r.clock_out; });
+        content.innerHTML =
+          '<div class="topbar"><h1>System Admin</h1></div>' +
+          '<div class="card"><h2>Staff on duty now</h2><div class="tablewrap"><table><thead><tr><th>Staff</th><th>Clocked in</th><th>Hours</th><th>Location</th><th>Action</th></tr></thead><tbody>' +
+          (onDuty.length
+            ? onDuty.map(function (r) {
+                var hours = Math.max(0, Math.round(((Date.now() - new Date(r.clock_in).getTime()) / 3600000) * 100) / 100);
+                return "<tr><td><strong>" + esc(r.staff_name) + "</strong></td><td>" + eatTimeStr(r.clock_in) + "</td><td>" + hours + "h</td><td>" + (r.location_verified ? '<span style="color:var(--green);font-weight:700;">Verified</span>' : '<span style="color:var(--red);font-weight:700;">Flagged</span>') + "</td><td><button class='btn small' data-early='" + r.staff_id + "' data-name='" + esc(r.staff_name) + "'>Sign out early</button></td></tr>";
+              }).join("")
+            : '<tr><td colspan="5" class="empty">No staff on duty right now.</td></tr>') +
+          "</tbody></table></div></div>" +
+          '<div class="card"><h2>Admin tools</h2>' +
+          '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">Owner and System Admin only: sign out any worker before 5:00 PM with a recorded reason.</p>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          '<button class="btn small ghost" data-go="users">Manage users</button>' +
+          '<button class="btn small ghost" data-go="repair">System repair</button>' +
+          '<button class="btn small ghost" data-go="payroll">Payroll</button>' +
+          "</div></div>";
+        var btns = content.querySelectorAll("[data-early]");
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].addEventListener("click", function () {
+            var sid = Number(this.getAttribute("data-early"));
+            var nm = this.getAttribute("data-name");
+            openModal("Sign out early — " + nm, "Only the Owner and System Admin can do this. The reason is recorded with your name.", [
+              { name: "staffId", label: "Staff", type: "hidden", value: sid },
+              { name: "note", label: "Reason", type: "textarea", value: "", required: true },
+            ], async function (v) {
+              await api("/api/catalog?resource=attendance&action=early-signout", { method: "POST", body: { staffId: v.staffId, note: v.note } });
+              toast(nm + " signed out early — recorded by you.");
+              viewSysadmin();
+            }, "Sign out early");
+          });
+        }
+        var goBtns = content.querySelectorAll("[data-go]");
+        for (var j = 0; j < goBtns.length; j++) {
+          goBtns[j].addEventListener("click", function () { go(this.getAttribute("data-go")); });
+        }
+      }
+
+      async function viewAttendanceReport() {
+        var staffData = await api("/api/catalog?resource=staff");
+        var staff = staffData.items || [];
+        var today = new Date().toISOString().slice(0, 10);
+        var firstOfMonth = today.slice(0, 7) + "-01";
+        function dtstr(v) {
+          if (!v) return "—";
+          try { var d = new Date(v); return isNaN(d) ? String(v) : d.toLocaleString("en-GB", { timeZone: "Africa/Kampala", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (e) { return String(v); }
+        }
+        content.innerHTML =
+          '<div class="topbar"><h1>Attendance Report</h1></div>' +
+          '<div class="card"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">' +
+          '<div class="field" style="margin:0;"><label>From</label><input id="repFrom" type="date" value="' + firstOfMonth + '" /></div>' +
+          '<div class="field" style="margin:0;"><label>To</label><input id="repTo" type="date" value="' + today + '" /></div>' +
+          '<div class="field" style="margin:0;"><label>Staff</label><select id="repStaff" style="padding:10px;border:1px solid var(--line);border-radius:9px;">' +
+          '<option value="">All staff</option>' +
+          staff.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + "</option>"; }).join("") +
+          "</select></div>" +
+          '<button class="btn" id="repLoad">Load report</button>' +
+          '<a class="btn ghost" id="repPdf" href="#" target="_blank" rel="noopener" style="text-decoration:none;">Download PDF</a>' +
+          "</div></div>" +
+          '<div id="repBody"><p class="empty">Loading report…</p></div>';
+        function q() {
+          return "&action=report&from=" + encodeURIComponent(document.getElementById("repFrom").value) + "&to=" + encodeURIComponent(document.getElementById("repTo").value) + "&staffId=" + (document.getElementById("repStaff").value || "");
+        }
+        function setPdf() {
+          var p = q().replace("action=report", "action=report-pdf");
+          document.getElementById("repPdf").href = "/api/catalog?resource=attendance" + p;
+        }
+        async function load() {
+          setPdf();
+          var body = document.getElementById("repBody");
+          try {
+            var d = await api("/api/catalog?resource=attendance" + q());
+            var rows = d.rows || [];
+            var sum = d.summary || {};
+            var rowHtml = rows.length
+              ? rows.map(function (r) {
+                  var reason = r.note || (r.method === "manual" ? "Manual entry" : "");
+                  if (r.adjusted_by) reason = (reason ? reason + " " : "") + "(by " + r.adjusted_by + ")";
+                  if (!r.location_verified) reason = "Location flagged — " + reason;
+                  return "<tr><td>" + esc(r.date) + "</td><td><strong>" + esc(r.staff_name) + "</strong></td><td>" + dtstr(r.clock_in) + "</td><td>" + dtstr(r.clock_out) + "</td><td>" + (r.hours != null ? r.hours + "h" : "—") + "</td><td>" + esc(r.method || "—") + "</td><td>" + (r.location_verified ? '<span style="color:var(--green);font-weight:700;">Verified</span>' : '<span style="color:var(--red);font-weight:700;">Flagged</span>') + "</td><td>" + esc(reason || "—") + "</td></tr>";
+                }).join("")
+              : '<tr><td colspan="8" class="empty">No attendance records in this period.</td></tr>';
+            var staffHtml = (sum.staff || []).map(function (s) {
+              return "<tr><td><strong>" + esc(s.staffName) + "</strong></td><td>" + s.days + "</td><td>" + s.hours + "h</td><td>" + s.early + "</td><td style='color:" + (s.flagged > 0 ? "var(--red);" : "var(--green);") + "font-weight:700;'>" + s.flagged + "</td></tr>";
+            }).join("");
+            body.innerHTML =
+              '<div class="stats" style="margin:14px 0;">' +
+              '<div class="stat"><div class="label">Days recorded</div><div class="value">' + sum.days + "</div></div>" +
+              '<div class="stat"><div class="label">Total hours</div><div class="value">' + sum.totalHours + "h</div></div>" +
+              '<div class="stat"><div class="label">Early sign-outs</div><div class="value" style="color:var(--amber);">' + sum.early + "</div></div>" +
+              '<div class="stat"><div class="label">Flagged</div><div class="value" style="color:var(--red);">' + sum.flagged + "</div></div>" +
+              "</div>" +
+              '<div class="card"><h2>Summary by staff</h2><div class="tablewrap"><table><thead><tr><th>Staff</th><th>Days</th><th>Hours</th><th>Early sign-outs</th><th>Flagged</th></tr></thead><tbody>' + (staffHtml || '<tr><td colspan="5" class="empty">No records.</td></tr>') + "</tbody></table></div></div>" +
+              '<div class="card"><h2>All times in and out</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Staff</th><th>Clock in</th><th>Clock out</th><th>Hours</th><th>Method</th><th>Location</th><th>Reason / Notes</th></tr></thead><tbody>' + rowHtml + "</tbody></table></div></div>";
+          } catch (e) {
+            body.innerHTML = '<p class="empty">Error: ' + esc(e.message) + "</p>";
+          }
+        }
+        document.getElementById("repLoad").addEventListener("click", load);
+        load();
+      }
+
+      /* ---------- Navigation ---------- */
+      var views = {
+        dashboard: viewDashboard,
+        reservations: viewReservations,
+        rooms: viewRooms,
+        guests: viewGuests,
+        billing: viewBilling,
+        inventory: viewInventory,
+        staff: viewStaff,
+        attendance: viewAttendance,
+        attendanceReport: viewAttendanceReport,
+        notifications: viewNotifications,
+        housekeeping: viewHousekeeping,
+        reports: viewReports,
+        payroll: viewPayroll,
+        repair: viewRepair,
+        users: viewUsers,
+        sysadmin: viewSysadmin,
+      };
+
+      var ROLE_ALLOW = {
+        dashboard: ["owner", "system_admin", "manager", "finance", "receptionist"],
+        housekeeping: ["owner", "system_admin", "manager", "housekeeping", "cleaner"],
+        reservations: ["owner", "system_admin", "manager", "receptionist"],
+        rooms: ["owner", "system_admin", "manager"],
+        guests: ["owner", "system_admin", "manager", "receptionist"],
+        billing: ["owner", "system_admin", "manager", "finance", "receptionist"],
+        inventory: ["owner", "system_admin", "manager"],
+        staff: ["owner", "system_admin", "manager", "finance"],
+        attendance: ["owner", "system_admin", "manager", "finance", "receptionist", "housekeeping", "cleaner"],
+        attendanceReport: ["owner", "system_admin", "manager", "finance"],
+        notifications: ["owner", "system_admin", "manager", "receptionist"],
+        reports: ["owner", "system_admin", "manager", "finance"],
+        payroll: ["owner", "system_admin", "manager", "finance"],
+        repair: ["owner", "system_admin", "manager"],
+        users: ["owner", "system_admin"],
+        sysadmin: ["owner", "system_admin"],
+      };
+
+      function can(view) {
+        var roles = ROLE_ALLOW[view];
+        return !!(currentUser && roles && roles.indexOf(currentUser.role) !== -1);
+      }
+
+      function firstView() {
+        var order = ["dashboard", "reservations", "rooms", "guests", "billing", "inventory", "staff", "attendance", "attendanceReport", "notifications", "housekeeping", "reports", "payroll", "repair", "users", "sysadmin"];
+        for (var i = 0; i < order.length; i++) {
+          if (can(order[i])) return order[i];
+        }
+        return "dashboard";
+      }
+
+      function renderNav() {
+        var role = currentUser ? currentUser.role : "";
+        document.querySelectorAll("aside button[data-view]").forEach(function (b) {
+          var roles = (b.getAttribute("data-roles") || "").split(",");
+          b.style.display = role && roles.indexOf(role) !== -1 ? "" : "none";
+        });
+        var who = document.getElementById("who");
+        if (who && currentUser) who.textContent = currentUser.name + " · " + currentUser.role;
+      }
+
+      function go(view) {
+        if (!can(view)) view = "dashboard";
+        currentView = view;
+        document.querySelectorAll("aside button[data-view]").forEach(function (b) {
+          b.classList.toggle("active", b.getAttribute("data-view") === view);
+        });
+        content.innerHTML = '<p class="empty">Loading…</p>';
+        (views[view] || views.dashboard)().catch(function (e) {
+          content.innerHTML = '<p class="empty">Error: ' + esc(e.message) + "</p>";
+        });
+      }
+      document.querySelectorAll("aside button[data-view]").forEach(function (b) {
+        b.addEventListener("click", function () { go(b.getAttribute("data-view")); });
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", function () {
+        fetch("/api/auth?action=logout", { method: "POST" }).finally(function () {
+          window.location.href = "/manage";
+        });
+      });
+      document.getElementById("changePwdBtn").addEventListener("click", function () { changePassword(false); });
+
+      /* ---------- Session check ---------- */
+      function checkSession() {
+        fetch("/api/auth?action=status")
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok && d.user) {
+              currentUser = d.user; renderNav(); showApp();
+              if (d.user.must_change_password) { changePassword(true); return; }
+              go(firstView());
+            }
+            else { window.location.href = "/manage"; }
+          })
+          .catch(function () { window.location.href = "/manage"; });
+      }
+      checkSession();
+    })();
+  </script>
+</body>
+</html>

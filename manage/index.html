@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/logo.png" />
+  <title>OTZU Guest House – Management</title>
+  <style>
+    :root {
+      --blue: #003580; --blue-dark: #00224f; --btn: #0071c2; --btn-dark: #005ba1;
+      --teal: #14b8a6; --line: #e2e8f0; --muted: #64748b; --bg: #f5f6f7; --ink: #0f172a; --red: #b3261e;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--ink); line-height: 1.55; }
+    button { font-family: inherit; cursor: pointer; }
+    input { font-family: inherit; font-size: 0.95rem; }
+    a { text-decoration: none; color: inherit; }
+
+    header { background: var(--blue); color: #fff; padding: 12px 0; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 18px; }
+    .head-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; }
+    .brand img { width: 32px; height: 32px; border-radius: 7px; object-fit: contain; background: #fff; }
+    .head-links { display: flex; gap: 16px; font-size: 0.88rem; font-weight: 600; }
+    .head-links a { color: rgb(255 255 255 / 0.88); }
+    .head-links a:hover { color: #fff; }
+
+    .hero {
+      background: linear-gradient(150deg, var(--blue), var(--blue-dark));
+      color: #fff; text-align: center; padding: 54px 18px 70px;
+    }
+    .hero h1 { font-size: clamp(1.7rem, 4.5vw, 2.4rem); letter-spacing: -0.01em; }
+    .hero p { max-width: 620px; margin: 14px auto 0; color: rgb(255 255 255 / 0.82); font-size: 1.02rem; }
+
+    .auth-wrap { max-width: 460px; margin: -34px auto 0; padding: 0 18px 40px; position: relative; z-index: 2; }
+    .auth-card { background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgb(0 0 0 / 0.18); overflow: hidden; }
+    .tabs { display: flex; border-bottom: 1px solid var(--line); }
+    .tabs button {
+      flex: 1; padding: 15px; border: 0; background: transparent; font-weight: 700; font-size: 0.95rem;
+      color: var(--muted); border-bottom: 3px solid transparent;
+    }
+    .tabs button.active { color: var(--blue); border-bottom-color: var(--btn); }
+    .form { padding: 24px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 5px; }
+    .field input {
+      width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; background: #fff;
+    }
+    .field input:focus { outline: none; border-color: var(--btn); box-shadow: 0 0 0 3px rgb(0 113 194 / 0.14); }
+    .btn {
+      width: 100%; padding: 12px; border: 0; border-radius: 9px; background: var(--btn); color: #fff;
+      font-weight: 700; font-size: 0.95rem;
+    }
+    .btn:hover { background: var(--btn-dark); }
+    .error { color: var(--red); font-size: 0.85rem; margin-top: 10px; }
+    .note { background: rgb(20 184 166 / 0.1); border: 1px solid rgb(20 184 166 / 0.35); color: #0d6b5f; border-radius: 10px; padding: 11px 13px; font-size: 0.85rem; margin-bottom: 14px; }
+
+    .links { max-width: 460px; margin: 0 auto; padding: 0 18px 50px; display: grid; gap: 12px; }
+    .link-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+      font-weight: 700; color: var(--blue); transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .link-card:hover { border-color: var(--btn); box-shadow: 0 8px 24px rgb(0 0 0 / 0.08); }
+    .link-card span { color: var(--muted); font-weight: 600; font-size: 0.82rem; }
+
+    footer { background: var(--blue-dark); color: rgb(255 255 255 / 0.72); padding: 18px 0; font-size: 0.84rem; }
+    .foot-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+    .foot-row a { color: #fff; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap head-row">
+      <div class="brand"><img src="/logo.png" alt="OTZU Tech Solutions logo" /> OTZU Guest House</div>
+      <div class="head-links">
+        <a href="/">Website</a>
+        <a href="/book">Book a Room</a>
+        <a href="/inbox">Messages</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Guest House Management</h1>
+    <p>Sign in to manage rooms, reservations, billing, and reports — or explore the guest house first.</p>
+  </div>
+
+  <div class="auth-wrap">
+    <div class="note" id="signedIn" hidden style="text-align:center;line-height:1.7;">
+      <strong style="font-size:0.95rem;">You are already signed in.</strong><br />
+      <span id="signedInName" style="font-size:0.9rem;"></span><br />
+      <a href="/console" id="openConsole" style="font-weight:800;color:var(--blue);">Continue to the Console →</a>
+      &nbsp;·&nbsp;
+      <a href="#" id="signOutHere" style="font-weight:800;color:var(--red);">Not you? Log out</a>
+    </div>
+    <div class="auth-card">
+      <div class="tabs">
+        <button id="tabSignin" class="active" type="button">Sign in</button>
+        <button id="tabSignup" type="button">Create account</button>
+      </div>
+
+      <div class="form" id="signinForm">
+        <div class="field">
+          <label for="inEmail">Email</label>
+          <input id="inEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="inPassword">Password</label>
+          <input id="inPassword" type="password" placeholder="••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn" id="signinBtn">Sign in</button>
+        <p class="error" id="signinError" hidden></p>
+        <p style="text-align:center;font-size:0.8rem;color:var(--muted);margin-top:12px;">
+          Forgot your password? The <strong>Owner</strong> or <strong>System Admin</strong> can reset it for you.
+        </p>
+      </div>
+
+      <div class="form" id="signupForm" hidden>
+        <p class="note" id="signupNote" hidden></p>
+        <div class="field">
+          <label for="upName">Full name</label>
+          <input id="upName" type="text" placeholder="Your name" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="upEmail">Email</label>
+          <input id="upEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="upPassword">Password</label>
+          <input id="upPassword" type="password" placeholder="At least 4 characters" autocomplete="new-password" />
+        </div>
+        <button class="btn" id="signupBtn">Create account</button>
+        <p class="error" id="signupError" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="links">
+    <a class="link-card" href="/book">Browse &amp; book rooms <span>View the guest house →</span></a>
+    <a class="link-card" href="/">Company website <span>otzu-tech-solutions.vercel.app →</span></a>
+  </div>
+
+  <footer>
+    <div class="wrap foot-row">
+      <span>© 2025 OTZU Tech Solutions · Guest House Management</span>
+      <span><a href="/book">Book a Room</a> · <a href="/">Website</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var tabSignin = document.getElementById("tabSignin");
+      var tabSignup = document.getElementById("tabSignup");
+      var signinForm = document.getElementById("signinForm");
+      var signupForm = document.getElementById("signupForm");
+      var ownerExists = true;
+
+      function showTab(which) {
+        var signin = which === "signin";
+        tabSignin.classList.toggle("active", signin);
+        tabSignup.classList.toggle("active", !signin);
+        signinForm.hidden = !signin;
+        signupForm.hidden = signin;
+      }
+      tabSignin.addEventListener("click", function () { showTab("signin"); });
+      tabSignup.addEventListener("click", function () {
+        if (ownerExists) {
+          document.getElementById("signupNote").textContent =
+            "Accounts are managed by the guest house owner. Contact the owner to get access.";
+          document.getElementById("signupNote").hidden = false;
+        }
+        showTab("signup");
+      });
+
+      function openConsoleSoon() {
+        var banner = document.getElementById("signedIn");
+        banner.hidden = false;
+        document.getElementById("signedInName").textContent = document.getElementById("signedInName").textContent || "you";
+        setTimeout(function () { window.location.href = "/console"; }, 1200);
+      }
+
+      document.getElementById("signOutHere").addEventListener("click", function (e) {
+        e.preventDefault();
+        fetch("/api/auth?action=logout", { method: "POST" }).finally(function () {
+          window.location.reload();
+        });
+      });
+
+      function post(action, body) {
+        return fetch("/api/auth?action=" + action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then(function (res) {
+          return res.json().then(function (json) {
+            if (!res.ok) throw new Error(json.error || "Request failed");
+            return json;
+          });
+        });
+      }
+
+      document.getElementById("signinBtn").addEventListener("click", function () {
+        var err = document.getElementById("signinError");
+        var btn = this;
+        btn.disabled = true;
+        post("signin", {
+          email: document.getElementById("inEmail").value,
+          password: document.getElementById("inPassword").value,
+        })
+          .then(function (d) {
+            document.getElementById("signedInName").textContent =
+              (d.user ? d.user.name + " (" + d.user.role + ")" : "you") + " — opening console…";
+            openConsoleSoon();
+          })
+          .catch(function (e) { err.textContent = e.message; err.hidden = false; })
+          .finally(function () { btn.disabled = false; });
+      });
+      document.getElementById("inPassword").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") document.getElementById("signinBtn").click();
+      });
+
+      document.getElementById("signupBtn").addEventListener("click", function () {
+        var err = document.getElementById("signupError");
+        var btn = this;
+        btn.disabled = true;
+        post("signup", {
+          name: document.getElementById("upName").value,
+          email: document.getElementById("upEmail").value,
+          password: document.getElementById("upPassword").value,
+        })
+          .then(function (d) {
+            document.getElementById("signedInName").textContent =
+              (d.user ? d.user.name + " (" + d.user.role + ")" : "you") + " — opening console…";
+            openConsoleSoon();
+          })
+          .catch(function (e) { err.textContent = e.message; err.hidden = false; })
+          .finally(function () { btn.disabled = false; });
+      });
+
+      /* If already signed in, go straight to the console */
+      fetch("/api/auth?action=status")
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.ok && d.user) {
+            document.getElementById("signedIn").hidden = false;
+            document.getElementById("signedInName").textContent =
+              "Account: " + d.user.name + " (" + d.user.role + ") · " + d.user.email;
+            ownerExists = !!(d && d.ownerExists);
+            return;
+          }
+          ownerExists = !!(d && d.ownerExists);
+        })
+        .catch(function () {});
+    })();
+  </script>
+</body>
+</html>

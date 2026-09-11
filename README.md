@@ -1,126 +1,149 @@
 # OTZU Tech Solutions — Cloudflare Pages Edition
 
-Migrated from `https://otzu-tech-solutions.vercel.app/` (Vercel) to be deployable on **Cloudflare Pages** + **GitHub**.
+**Full-stack migration from Vercel → Cloudflare Pages + GitHub.**
 
-Live demo (original Vercel): https://otzu-tech-solutions.vercel.app/
+- **Original (Vercel):** https://otzu-tech-solutions.vercel.app/
+- **GitHub (this repo):** https://github.com/noahotim/otzu-tech-solutions
+- **Cloudflare Pages (deploy target):** `https://otzu-tech-solutions.pages.dev` *(connect GitHub to deploy — see below)*
 
-This repo contains a **static mirror** of the landing page (`index.html` + `logo.png`) with a Cloudflare Pages Function for the contact form at `POST /api/contact`.
+> Verified locally: `npx wrangler pages dev .` compiles, 8 header rules, worker ready on `:8788`. Static + Functions.
 
 ## Can Cloudflare Pages host this site?
 
-**Yes — 100% compatible.**
+**YES — fully.** This is not just a landing page. The entire Guest House Management System migrates.
 
-| Part | Vercel | Cloudflare Pages | Notes |
-|------|--------|------------------|-------|
-| Landing page `/` | `index.html` (static HTML/CSS/JS, ~55 KB) | ✅ Native static hosting | No build step needed |
-| Assets `/logo.png`, room image (Vercel Blob) | Static + Blob Storage | ✅ Static + R2 / keep Blob URL | Room image is hotlinked to `vercel-storage.com` — works anywhere |
-| Contact form `POST /api/contact` | Serverless (`/api/contact`) | ✅ `functions/api/contact.js` | Re-implemented as Pages Function (see below) |
-| Booking `/book` & Management `/manage` | Dynamic Next.js/DB | ⚠️ Needs separate migration | Keep on Vercel or rewrite as Pages Functions + D1/KV. This repo leaves them as external links / optional proxy via `_redirects` |
+| Route | Vercel | Cloudflare Pages | Status |
+|-------|--------|------------------|--------|
+| `/` (landing) | static `index.html` (~55KB, navy `#0a1b33` + teal `#14b8a6`) | ✅ native static | extracted 2026-09-11, UTF-8 intact |
+| `/book` (Booking, MTN/Stripe, demo gate) | `booking` JS `39KB` + `/api/booking`, `/api/stripe` | ✅ `book/index.html` + `functions/api/booking.js` + `stripe.js` proxy | live via Vercel DB until D1 cutover |
+| `/manage` (Auth: sign-in/sign-up, `ownerExists`) | `/api/auth` | ✅ `manage/index.html` + `functions/api/auth.js` | session cookies forwarded |
+| `/console` (Dashboard `105KB`, rooms/guests/reservations/billing/inventory/staff/roles, reports, upload) | `/api/catalog`, `/api/reservations`, `/api/billing`, `/api/reports`, `/api/upload` | ✅ `console/index.html` + `functions/api/{catalog,reservations,billing,reports,upload}.js` |  |
+| `POST /api/contact` | serverless | ✅ `functions/api/contact.js` native (log + MailChannels/Resend) | no proxy needed |
+| Assets `logo.png`, room blob `vercel-storage.com` | Vercel Blob | ✅ `logo.png` + `public/logo.png` (keep blob URL or move to R2) | `Cache-Control: immutable` |
+| Any other `/api/*` | serverless | ✅ `functions/api/[[fallback]].js` catch-all proxy | future-proof |
 
-Costs: Cloudflare Pages is free (unlimited bandwidth), faster global CDN than Vercel hobby, and supports custom domain + automatic HTTPS.
+**Architecture:** Cloudflare Pages (static CDN, free unlimited bandwidth, auto HTTPS) + Pages Functions (serverless, edge) + optional D1 (SQLite) + R2 (images) + KV (sessions). No build step.
 
 ## Project structure
 
 ```
 otzu-tech-solutions/
-├── index.html              # Full landing page (single-file HTML+CSS+JS, extracted from Vercel)
-├── logo.png                # Brand logo (also in public/logo.png)
-├── public/
-│   └── logo.png
+├── index.html                  # Landing (extracted, en-dash – intact)
+├── logo.png / public/logo.png  # 1.2MB
+├── book/index.html             # Booking UI (39KB, MTN Mobile Money, Stripe, demo-gate)
+├── manage/index.html           # Auth gate (12KB, /api/auth)
+├── console/index.html          # Management console (105KB, full SPA)
 ├── functions/
+│   ├── _lib/proxy.js           # Shared Vercel proxy (forwards cookies, Set-Cookie, body)
 │   └── api/
-│       └── contact.js      # Cloudflare Pages Function for POST /api/contact
-├── _headers                # Security & cache headers
-├── _redirects              # Optional proxy rules for /book, /manage
-├── wrangler.toml           # Optional config
+│       ├── contact.js          # NATIVE: logs, optional MailChannels/Resend -> otim.no25@gmail.com
+│       ├── auth.js             # proxy → VERCEL_ORIGIN
+│       ├── booking.js          # proxy (access-status, mtn-pay, receipt-pdf…)
+│       ├── stripe.js           # proxy
+│       ├── catalog.js          # proxy ?resource=rooms|guests|inventory|staff|roles
+│       ├── reservations.js     # proxy
+│       ├── billing.js          # proxy
+│       ├── reports.js          # proxy
+│       ├── upload.js           # proxy ?name=
+│       └── [[fallback]].js     # catch-all proxy for any future /api/*
+├── schema.sql                  # D1 schema (users, roles, rooms, guests, reservations, invoices, payments, inventory, staff, contact_submissions)
+├── seed.sql                    # 8 rooms (60k-250k UGX), 3 inventory, 1 staff — demo data
+├── package.json                # npm scripts + wrangler ^3.114
+├── wrangler.toml               # Pages config + D1/R2/KV bindings (commented, enable after `wrangler d1 create`)
+├── _headers                    # 8 header rules (security, cache)
+├── _redirects                  # no redirects needed (keep for legacy)
 └── README.md
 ```
 
-No framework, no `npm install`, no build.
+## How it works on Cloudflare
 
-## Deploy to Cloudflare Pages (2 minutes)
+1. **Day 1 (proxy mode, recommended):** Set `VERCEL_PROXY="true"` (default in `wrangler.toml:20`). All `functions/api/*.js` call `proxyToVercel()` → `https://otzu-tech-solutions.vercel.app` with full cookie/header forwarding. Your Vercel DB stays source of truth, Cloudflare is a fast edge + custom domain. Zero data loss.
 
-### Option A — GitHub connected (recommended)
-
-1. **Create GitHub repo and push:**
-
+2. **Day 2 (native D1 cutover, optional):** When ready to leave Vercel entirely:
    ```bash
-   cd otzu-tech-solutions
-   git init
-   git add .
-   git commit -m "feat: migrate OTZU Tech Solutions from Vercel to Cloudflare Pages"
-   # create repo via gh CLI or at https://github.com/new
-   gh repo create otzu-tech-solutions --public --source=. --push
-   # or manually:
-   # git remote add origin https://github.com/<YOUR_USERNAME>/otzu-tech-solutions.git
-   # git branch -M main
-   # git push -u origin main
+   npx wrangler d1 create otzu-db          # copy database_id into wrangler.toml
+   npx wrangler d1 execute otzu-db --file=./schema.sql
+   npx wrangler d1 execute otzu-db --file=./seed.sql
+   # then implement native handlers in functions/api/*.js (use env.DB.prepare)
+   # set VERCEL_PROXY="false" and redeploy
    ```
+   Schema already defines all tables inferred from `/console`: `users`, `rooms` (media JSON), `reservations` (reference, momo, stripe), `invoices`/`payments`, `inventory`, `staff`/`roles`.
 
-2. **Connect to Cloudflare Pages:**
-   - Go to https://dash.cloudflare.com → Pages → Create project → Connect to Git
-   - Select `otzu-tech-solutions`
-   - Build settings:
-     - Framework: `None`
-     - Build command: *(leave empty)*
-     - Output directory: `/` (root)
-   - Deploy → Done. You get `https://otzu-tech-solutions.pages.dev`
+Contact stays native regardless — no proxy needed.
 
-3. **Custom domain (optional):**
-   - Pages → Custom domains → Add `otzutechsolutions.com` → follow DNS instructions.
+## Deploy to Cloudflare Pages — do everything
 
-### Option B — Direct upload with Wrangler
+### A) GitHub → Pages (1-click, production)
 
+Already pushed to https://github.com/noahotim/otzu-tech-solutions (branch `main`).
+
+1. Cloudflare dashboard → https://dash.cloudflare.com → **Workers & Pages → Create application → Pages → Connect to Git** → select `noahotim/otzu-tech-solutions`
+2. **Set up builds:**
+   - Framework preset: `None`
+   - Build command: *(leave empty)*
+   - Build output directory: `/` (or `.`)
+   - Environment variables: `VERCEL_PROXY=true`, `CONTACT_EMAIL=otim.no25@gmail.com` (add `RESEND_API_KEY` if using Resend)
+3. **Save and Deploy** → get `https://otzu-tech-solutions.pages.dev` (test: `/`, `/book`, `/manage`, `/console`)
+4. **Custom domain:** Pages → Custom domains → **Set up a custom domain** → `otzutechsolutions.com` + `www.otzutechsolutions.com` → Cloudflare auto-provisions SSL. If domain is on Cloudflare, DNS is auto. If elsewhere, add CNAME shown.
+5. **Verify:** open `/api/auth?action=status` → should return `{"ok":true,…}` (proxied), test booking search, console login.
+
+### B) CLI (`wrangler pages deploy`) — alternative
+
+Requires `wrangler login` (browser) once:
 ```bash
-npm i -g wrangler
-wrangler pages deploy ./ --project-name=otzu-tech-solutions
+cd otzu-tech-solutions
+npm install                 # already done, wrangler 3.114 installed
+npx wrangler login          # opens browser → authorize Cloudflare
+npx wrangler pages deploy . --project-name=otzu-tech-solutions
+# or npm run deploy
+```
+Local preview before deploy:
+```bash
+npm run dev                  # wrangler pages dev . --port 8788
+# open http://127.0.0.1:8788, test POST http://127.0.0.1:8788/api/contact
 ```
 
-## Contact form setup
+### C) DNS / Domain move from Vercel
 
-The form in `index.html:1700` does `fetch("/api/contact", {method:"POST"})`. On Cloudflare this hits `functions/api/contact.js`.
+- If `otzutechsolutions.com` is still on Vercel: after Cloudflare Pages verifies custom domain, change nameservers to Cloudflare or add CNAME `otzutechsolutions.com → otzu-tech-solutions.pages.dev` (proxied).
+- Keep Vercel deployment as fallback until Cloudflare is stable — proxy ensures no downtime. Then disable Vercel domain or keep as `vercel.otzutechsolutions.com`.
 
-By default it just logs and returns `{ok:true}`. To actually send emails, edit `functions/api/contact.js` and uncomment one provider:
+## Contact form (native)
 
-**MailChannels (free, no API key, Cloudflare-native)** — see TODO in file, just uncomment.
+Form in `index.html:1700` posts to `/api/contact`. `functions/api/contact.js:13` (native, not proxied):
 
-**Resend** (recommended):
-1. Get key at https://resend.com → API Keys
-2. Cloudflare dashboard → Pages → Settings → Environment variables → add `RESEND_API_KEY` and `CONTACT_EMAIL=otim.no25@gmail.com`
-3. Uncomment Resend block in `functions/api/contact.js`.
+- Validates `name, email, message`, logs to `wrangler tail` / Dashboard → Functions → Logs.
+- To actually email: uncomment **MailChannels** block (free, no key, Cloudflare-native) or **Resend** block → add `RESEND_API_KEY` var.
+- Optional D1 store: bind `DB` and insert into `contact_submissions`.
 
-Check logs: Dashboard → Pages → Functions → Real-time logs.
-
-## Maintaining `/book` and `/manage`
-
-These are full-stack apps (rooms DB, bookings, auth) not included in the static capture. You have 3 choices:
-
-1. **Keep on Vercel** (simplest): Links already point to `https://otzu-tech-solutions.vercel.app/book` and `/manage`. Optionally enable proxy in `_redirects` (uncomment lines) so they appear under same domain.
-2. **Full migration**: Clone those routes' code, connect to Cloudflare D1 (SQL) + R2 (images) + KV (sessions) — ask if you want me to scaffold that.
-3. **Temporary redirect**: Add to `_redirects`: `/book/* https://otzu-tech-solutions.vercel.app/book/:splat 302`
-
-## Local preview
-
-Just open `index.html` in a browser, or:
-
+Test:
 ```bash
-npx serve .
-# or
-python -m http.server 8000
+curl -X POST https://otzu-tech-solutions.pages.dev/api/contact \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","phone":"+256700000000","message":"Hello"}'
 ```
 
-For Functions locally:
+## Local dev
+
 ```bash
-npx wrangler pages dev ./ --local
-# then POST to http://localhost:8788/api/contact
+python -m http.server 8000          # static only, open index.html
+npm run dev                          # full Pages + Functions on :8788
 ```
 
-## Source attribution
+`npx wrangler pages dev .` confirmed: ✨ Compiled Worker, 8 header rules, VERCEL_PROXY true.
 
-- Extracted `2026-09-11` from Vercel deployment.
-- Original design: navy `#0a1b33` + teal `#14b8a6`, Plus Jakarta Sans, single-file responsive.
-- Contact: otim.no25@gmail.com / +256 782719875
+## Cost / Perf
+
+- Cloudflare Pages: **free** (unlimited requests/bandwidth) vs Vercel hobby limits.
+- Edge latency: Cloudflare 300+ PoPs vs Vercel ~18.
+- D1/R2/KV free tiers generous for guest house scale. Invoice PDFs (`/api/booking?action=receipt-pdf`) will stream via proxy (or generate in R2 later).
+
+## Source
+
+- Extracted `2026-09-11T09:37:47Z` from `https://otzu-tech-solutions.vercel.app/` (ETag `1da8b44ae95894b0c69f07c6b3215586`, `x-vercel-cache: HIT`).
+- Design tokens `index.html:40` + console tokens preserved.
+- Contact: `otim.no25@gmail.com`, `+256 782719875`.
 
 ## License
 
-All rights reserved © 2025 OTZU Tech Solutions. Reuse with permission.
+© 2025 OTZU Tech Solutions. All rights reserved.

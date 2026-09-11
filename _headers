@@ -1,5 +1,5 @@
 /*
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
@@ -7,10 +7,22 @@
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
-  Content-Type: text/html; charset=utf-8
+
+/book/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manage/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-store
+
+/console/*
+  Cache-Control: no-store
 
 /logo.png
   Cache-Control: public, max-age=31536000, immutable
 
 /public/*
   Cache-Control: public, max-age=31536000, immutable
+
+/functions/*
+  Cache-Control: no-store

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/logo.png" />
+  <title>Book a Room – OTZU Guest House, Soroti</title>
+  <meta name="description" content="Browse rooms at OTZU Guest House in Soroti City, check live availability, and book your stay online." />
+  <style>
+    :root {
+      --blue: #003580; --blue-dark: #00224f; --btn: #0071c2; --btn-dark: #005ba1;
+      --line: #e2e8f0; --muted: #64748b; --ink: #0f172a; --bg: #f5f6f7;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--ink); line-height: 1.5; }
+    button { font-family: inherit; cursor: pointer; }
+    input, select { font-family: inherit; font-size: 0.95rem; }
+
+    header { background: var(--blue); color: #fff; padding: 12px 0; position: sticky; top: 0; z-index: 40; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 18px; }
+    .head-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; }
+    .brand img { width: 32px; height: 32px; border-radius: 7px; object-fit: contain; background: #fff; }
+    .head-links { display: flex; gap: 16px; font-size: 0.88rem; font-weight: 600; }
+    .head-links a { color: rgb(255 255 255 / 0.88); text-decoration: none; }
+    .head-links a:hover { color: #fff; }
+
+    .searchbar { background: #fff; border-bottom: 1px solid var(--line); padding: 14px 0; }
+    .search-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .s-field { display: grid; gap: 4px; min-width: 140px; flex: 1; }
+    .s-field label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .s-field input, .s-field select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    }
+    .s-field input:focus, .s-field select:focus { outline: none; border-color: var(--btn); box-shadow: 0 0 0 3px rgb(0 113 194 / 0.15); }
+    .search-btn {
+      padding: 11px 26px; border: 0; border-radius: 8px; background: var(--btn); color: #fff;
+      font-weight: 700; font-size: 0.95rem; white-space: nowrap;
+    }
+    .search-btn:hover { background: var(--btn-dark); }
+
+    .results-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding: 22px 0 14px; }
+    .results-head h1 { font-size: 1.35rem; color: var(--blue); }
+    .results-head .meta { color: var(--muted); font-size: 0.88rem; }
+
+    .card {
+      display: flex; flex-wrap: wrap; background: #fff; border: 1px solid var(--line);
+      border-radius: 12px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+    }
+    .card-img { width: 100%; max-width: 300px; min-height: 200px; background: #e2e8f0; }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-body { flex: 1; min-width: 260px; padding: 16px 18px; }
+    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--ink); }
+    .card-sub { color: var(--muted); font-size: 0.88rem; margin-top: 2px; }
+    .rating-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .rating-badge {
+      width: 34px; height: 34px; border-radius: 8px 8px 8px 0; background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem;
+    }
+    .rating-label { font-size: 0.85rem; font-weight: 700; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip {
+      border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
+      padding: 4px 11px; font-size: 0.75rem; font-weight: 600; color: #334155;
+    }
+    .card-price {
+      width: 100%; max-width: 260px; border-left: 1px solid var(--line); padding: 16px 18px;
+      display: flex; flex-direction: column; justify-content: center; gap: 4px; background: #fafbfc;
+    }
+    .price-note { font-size: 0.72rem; color: var(--muted); }
+    .price { font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+    .price-total { font-size: 0.9rem; color: #334155; }
+    .nights-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+    .nights-row label { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .nights-row input {
+      width: 72px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700; color: var(--ink);
+    }
+    .nights-row input:focus { outline: none; border-color: var(--btn); box-shadow: 0 0 0 3px rgb(0 113 194 / 0.15); }
+    .avail { font-size: 0.8rem; font-weight: 700; margin: 6px 0; }
+    .avail.yes { color: #1a7f37; }
+    .avail.no { color: #b3261e; }
+    .avail.warn { color: #b45309; }
+    .reserve {
+      margin-top: 8px; padding: 11px 16px; border: 0; border-radius: 8px; background: var(--btn);
+      color: #fff; font-weight: 700; font-size: 0.92rem; width: 100%;
+    }
+    .reserve:hover:not(:disabled) { background: var(--btn-dark); }
+    .reserve:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+    footer { background: var(--blue-dark); color: rgb(255 255 255 / 0.75); padding: 18px 0; margin-top: 26px; font-size: 0.85rem; }
+    .foot-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+    .foot-row a { color: #fff; text-decoration: none; font-weight: 600; }
+
+    /* Location / map */
+    .location { padding: 10px 18px 28px; }
+    .loc-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .loc-head h2 { font-size: 1.15rem; color: var(--blue); }
+    .loc-sub { color: var(--muted); font-size: 0.88rem; margin-top: 2px; }
+    .directions-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px;
+      background: var(--btn); color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.88rem; text-decoration: none;
+    }
+    .directions-btn:hover { background: var(--btn-dark); }
+    .map-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / 0.06); background: #fff; }
+    .map-card iframe { display: block; width: 100%; height: 380px; border: 0; }
+    @media (max-width: 600px) { .map-card iframe { height: 300px; } }
+
+    /* Modal */
+    #backdrop {
+      position: fixed; inset: 0; background: rgb(0 34 79 / 0.55); display: flex; align-items: center; justify-content: center;
+      padding: 16px; z-index: 60;
+    }
+    #backdrop[hidden] { display: none; }
+    .modal {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; padding: 24px;
+      box-shadow: 0 24px 80px rgb(0 0 0 / 0.35);
+    }
+    .modal h3 { font-size: 1.1rem; color: var(--blue); }
+    .modal .sub { color: var(--muted); font-size: 0.88rem; margin: 6px 0 16px; }
+    .modal .field { margin-bottom: 12px; }
+    .modal label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 5px; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    }
+    .modal input:focus, .modal textarea:focus { outline: none; border-color: var(--btn); box-shadow: 0 0 0 3px rgb(0 113 194 / 0.15); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .btn { padding: 10px 18px; border: 0; border-radius: 8px; background: var(--btn); color: #fff; font-weight: 700; }
+    .btn:hover { background: var(--btn-dark); }
+    .btn.ghost { background: transparent; color: var(--muted); }
+    .btn.ghost:hover { background: var(--bg); }
+    .error { color: #b3261e; font-size: 0.85rem; margin-top: 8px; }
+    .note {
+      background: rgb(20 184 166 / 0.1); border: 1px solid rgb(20 184 166 / 0.35); color: #0d6b5f;
+      border-radius: 10px; padding: 10px 12px; font-size: 0.84rem; margin-top: 4px;
+    }
+    .success { text-align: center; padding: 10px 0; }
+    .success .ref { font-size: 1.3rem; font-weight: 800; color: #1a7f37; margin: 8px 0; }
+    .success .details { color: #334155; font-size: 0.92rem; line-height: 1.7; }
+    .empty { text-align: center; color: var(--muted); padding: 50px 0; }
+
+    @media (max-width: 760px) {
+      .card-img { max-width: 100%; min-height: 180px; }
+      .card-price { max-width: 100%; border-left: 0; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap head-row">
+      <div class="brand"><img src="/logo.png" alt="OTZU Tech Solutions logo" /> OTZU Guest House</div>
+      <div class="head-links">
+        <a href="/">Website</a>
+        <a href="/manage">Guest House Management</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Demo gate -->
+  <div id="gate" hidden>
+    <div style="background:linear-gradient(150deg,#003580,#00224f);color:#fff;text-align:center;padding:56px 18px;">
+      <div class="wrap">
+        <h1 style="font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-0.01em;">See the guest house in action</h1>
+        <p style="max-width:560px;margin:14px auto 0;color:rgb(255 255 255 / 0.85);font-size:1.02rem;">
+          OTZU Guest House is available by demo. Request access to browse our rooms, check live
+          availability, and see how online bookings work.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;margin-top:22px;color:rgb(255 255 255 / 0.8);font-size:0.9rem;">
+          <span>✓ 8 rooms &amp; suites</span><span>✓ Live availability</span><span>✓ Instant online booking</span>
+        </div>
+      </div>
+    </div>
+    <div class="wrap" style="max-width:520px;margin:-30px auto 0;padding:0 18px 50px;position:relative;z-index:2;">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgb(0 0 0 / 0.18);padding:24px;">
+        <h2 style="color:#003580;font-size:1.05rem;margin-bottom:4px;">Request demo access</h2>
+        <p style="color:#64748b;font-size:0.88rem;margin-bottom:16px;">Enter your details and the guest house will open for you.</p>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="gName" style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:5px;">Full name</label>
+          <input id="gName" placeholder="Your name" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:9px;" />
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="gEmail" style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:5px;">Email</label>
+          <input id="gEmail" type="email" placeholder="you@example.com" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:9px;" />
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="gPhone" style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:5px;">Phone <span style="font-weight:400;color:#64748b;">(optional)</span></label>
+          <input id="gPhone" placeholder="+256 …" style="width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:9px;" />
+        </div>
+        <button class="search-btn" id="demoBtn" style="width:100%;">Request demo access</button>
+        <p class="error" id="gateError" hidden style="margin-top:10px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="bookingApp" hidden>
+  <div class="searchbar">
+    <div class="wrap search-row">
+      <div class="s-field">
+        <label for="dest">Destination</label>
+        <input id="dest" value="Soroti, Uganda" />
+      </div>
+      <div class="s-field">
+        <label for="checkIn">Check-in</label>
+        <input id="checkIn" type="date" />
+      </div>
+      <div class="s-field">
+        <label for="nights">Nights</label>
+        <input id="nights" type="number" min="1" max="30" value="2" />
+      </div>
+      <div class="s-field" style="max-width:130px;">
+        <label for="guests">Guests</label>
+        <select id="guests">
+          <option value="1">1 adult</option>
+          <option value="2">2 adults</option>
+          <option value="3">3 adults</option>
+          <option value="4">4 adults</option>
+          <option value="5">5 adults</option>
+          <option value="6">6 adults</option>
+        </select>
+      </div>
+      <button class="search-btn" id="searchBtn">Search</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div class="results-head">
+      <h1 id="resultsTitle">Rooms at OTZU Guest House</h1>
+      <span class="meta" id="resultsMeta"></span>
+    </div>
+    <div id="list"><p class="empty">Loading rooms…</p></div>
+  </main>
+
+    <section class="location wrap">
+      <div class="loc-head">
+        <div>
+          <h2>Find us in Soroti City</h2>
+          <p class="loc-sub">OTZU Guest House · Near Raphada Phone Doctors, Soroti City, Uganda</p>
+          <p class="loc-sub" id="policyLine" style="font-weight:700;color:var(--blue);margin-top:6px;"></p>
+        </div>
+        <a class="directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=Raphada+Phone+Doctors,+Soroti,+Uganda" target="_blank" rel="noopener">Get directions <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="map-card">
+        <iframe
+          src="https://maps.google.com/maps?q=Raphada%20Phone%20Doctors%2C%20Soroti%2C%20Uganda&t=&z=15&ie=UTF8&iwloc=&output=embed"
+          title="Map showing OTZU Guest House, near Raphada Phone Doctors, Soroti City, Uganda"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap foot-row">
+      <span>© 2025 OTZU Tech Solutions · Guest House Management</span>
+      <span><a href="/">Company website</a> · <a href="/manage">Management login</a></span>
+    </div>
+  </footer>
+
+  <div id="backdrop" hidden>
+    <div class="modal">
+      <h3 id="mTitle">Reserve your room</h3>
+      <p class="sub" id="mSub"></p>
+      <div id="mBody"></div>
+      <div class="modal-footer" id="mFooter">
+        <button class="btn ghost" id="mCancel">Cancel</button>
+        <button class="btn" id="mConfirm">Confirm booking</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+      var list = document.getElementById("list");
+      var checkIn = document.getElementById("checkIn");
+      var nights = document.getElementById("nights");
+      var guests = document.getElementById("guests");
+      var items = [];
+      var roomNights = {};
+      var mtnReady = false;
+      var policyTimes = {};
+
+      function today() { var d = new Date(); return d.toISOString().slice(0, 10); }
+      function addDays(s, n) { var d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+      function money(n) { return "UGX " + Number(n || 0).toLocaleString(); }
+      function fmt12(t) { if (!t) return ""; var p = String(t).split(":"); var h = Number(p[0]) || 0; var m = p[1] || "00"; var ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return h + ":" + m + " " + ap; }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+      function fmt(s) { if (!s) return ""; var p = s.split("-"); return p[2] + " " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][Number(p[1]) - 1] + " " + p[0]; }
+      function payInfo(method, total) {
+        if (method === "mobile_money") {
+          return mtnReady
+            ? "We'll send a payment request to your phone right away — approve it on your phone to confirm your booking instantly."
+            : "Pay by sending " + money(total) + " to Mobile Money: 0771039129. Use your booking reference as the payment note.";
+        }
+        if (method === "card") {
+          return "Pay securely by card — you'll get a payment link after booking to complete payment.";
+        }
+        if (method === "bank") {
+          return "Use your payment link to pay by Mobile Money, or contact us for bank transfer details.";
+        }
+        return "Pay cash on arrival at the guest house.";
+      }
+      function ratingLabel(score) {
+        if (score >= 9) return "Exceptional";
+        if (score >= 8) return "Superb";
+        if (score >= 7) return "Fabulous";
+        if (score >= 6) return "Good";
+        return "Pleasant";
+      }
+      function chips(room) {
+        var list = ["Free WiFi", "Free parking", "Room service"];
+        if (room.capacity >= 4) list.push("Family rooms");
+        var images = (room.media || []).filter(function (m) { return m.type === "image"; }).length;
+        var videos = (room.media || []).filter(function (m) { return m.type === "video"; }).length;
+        if (images || videos) {
+          list.push(images + " photo" + (images === 1 ? "" : "s") + (videos ? " · " + videos + " video" + (videos === 1 ? "" : "s") : ""));
+        }
+        return list.map(function (c) { return '<span class="chip">' + c + "</span>"; }).join("");
+      }
+
+      function defaultDates() {
+        checkIn.value = today();
+        nights.value = 2;
+      }
+
+      function initBooking() {
+        defaultDates();
+        load();
+      }
+
+      function isStayMode() {
+        return new URLSearchParams(window.location.search).get("mode") === "stay";
+      }
+
+      function showBooking() {
+        document.getElementById("gate").hidden = true;
+        document.getElementById("bookingApp").hidden = false;
+        initBooking();
+      }
+
+      function checkAccess() {
+        if (isStayMode()) {
+          showBooking();
+          return;
+        }
+        fetch("/api/booking?action=access-status")
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.allowed) {
+              showBooking();
+            } else {
+              document.getElementById("gate").hidden = false;
+              document.getElementById("bookingApp").hidden = true;
+            }
+          })
+          .catch(function () {
+            document.getElementById("gate").hidden = false;
+            document.getElementById("bookingApp").hidden = true;
+          });
+      }
+
+      document.getElementById("demoBtn").addEventListener("click", async function () {
+        var err = document.getElementById("gateError");
+        var btn = this;
+        btn.disabled = true;
+        try {
+          var res = await fetch("/api/booking?action=request-demo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("gName").value,
+              email: document.getElementById("gEmail").value,
+              phone: document.getElementById("gPhone").value,
+            }),
+          });
+          var json = await res.json();
+          if (!res.ok) throw new Error(json.error || "Request failed");
+          checkAccess();
+        } catch (e) {
+          err.textContent = e.message;
+          err.hidden = false;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      function currentCheckOut() {
+        return addDays(checkIn.value, Math.max(1, Number(nights.value) || 1));
+      }
+
+      function defaultNights() {
+        return Math.max(1, Math.round(Number(nights.value) || 2));
+      }
+
+      async function fetchAvailability(checkOutVal, guestVal) {
+        var q =
+          "?checkIn=" + encodeURIComponent(checkIn.value) +
+          "&checkOut=" + encodeURIComponent(checkOutVal) +
+          "&guests=" + encodeURIComponent(guestVal);
+        var res = await fetch("/api/booking" + q);
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load");
+        policyTimes = { checkInTime: data.checkInTime, checkOutTime: data.checkOutTime };
+        return data.items || [];
+      }
+
+      function distinctNights() {
+        var map = {};
+        (items || []).forEach(function (r) { map[roomNights[r.id] || defaultNights()] = true; });
+        return Object.keys(map).map(Number);
+      }
+
+      async function load() {
+        try {
+          var gn = defaultNights();
+          var first = await fetchAvailability(currentCheckOut(), guests.value);
+          items = first;
+          first.forEach(function (r) { if (!roomNights[r.id]) roomNights[r.id] = gn; });
+          var ranges = {};
+          var keys = distinctNights();
+          for (var i = 0; i < keys.length; i++) {
+            var n = keys[i];
+            ranges[n] = await fetchAvailability(addDays(checkIn.value, n), guests.value);
+          }
+          items = first.map(function (r) {
+            var n = roomNights[r.id] || gn;
+            var own = (ranges[n] || []).filter(function (x) { return x.id === r.id; })[0] || r;
+            return Object.assign({}, r, {
+              nights: n,
+              total: n * r.ratePerNight,
+              available: own.available,
+              fitsGuests: own.fitsGuests,
+            });
+          });
+        } catch (e) {
+          list.innerHTML = '<p class="empty">Could not load rooms: ' + esc(e.message) + "</p>";
+          return;
+        }
+        var n = items.length;
+        document.getElementById("resultsMeta").textContent =
+          n + (n === 1 ? " room available" : " rooms available") + " · Soroti City, Uganda · " +
+          fmt(checkIn.value) + " – " + fmt(currentCheckOut()) + " (" + nights.value + " night" + (nights.value === "1" ? "" : "s") + ") · " +
+          guests.value + " guest" + (guests.value === "1" ? "" : "s");
+        if (!n) {
+          list.innerHTML = '<p class="empty">No rooms available. Check back soon or adjust your dates.</p>';
+          return;
+        }
+        list.innerHTML = items.map(renderCard).join("");
+        attachNightInputs();
+        var pl = document.getElementById("policyLine");
+        if (pl) pl.textContent = "Check-in from " + fmt12(policyTimes.checkInTime) + " · Check-out by " + fmt12(policyTimes.checkOutTime);
+      }
+
+      function renderCard(r) {
+        var img = r.imageUrl || "https://picsum.photos/seed/otzu-room-" + r.id + "/600/400";
+        var mediaEl = r.firstVideo && !r.imageUrl
+          ? '<div class="card-img"><video src="' + esc(r.firstVideo) + '" controls preload="none" style="width:100%;height:100%;object-fit:cover;"></video></div>'
+          : '<div class="card-img"><img src="' + esc(img) + '" alt="' + esc(r.name) + '" loading="lazy" /></div>';
+        var availText, availClass;
+        if (!r.available && r.booked) { availText = "Booked for these dates"; availClass = "no"; }
+        else if (!r.available && r.status === "dirty") { availText = "Being cleaned — available soon"; availClass = "warn"; }
+        else if (!r.available) { availText = "Not available for these dates"; availClass = "no"; }
+        else if (!r.fitsGuests) { availText = "Too small for " + guests.value + " guest" + (guests.value === "1" ? "" : "s"); availClass = "warn"; }
+        else { availText = "Available for these dates"; availClass = "yes"; }
+        var canBook = r.available && r.fitsGuests;
+        return (
+          '<div class="card">' +
+          mediaEl +
+          '<div class="card-body">' +
+            '<div class="card-title">' + esc(r.name) + "</div>" +
+            '<div class="card-sub">' + esc(r.type) + " · sleeps " + r.capacity + " · Soroti City, Uganda</div>" +
+            '<div class="rating-row">' +
+              '<div class="rating-badge">' + Number(r.rating).toFixed(1) + "</div>" +
+              '<div class="rating-label">' + ratingLabel(r.rating) + "<br><small style='color:var(--muted);font-weight:600;'>" + r.reviews + " reviews</small></div>" +
+            "</div>" +
+            '<div class="chips">' + chips(r) + "</div>" +
+          "</div>" +
+          '<div class="card-price">' +
+            '<span class="price-note">Per night for 1 room</span>' +
+            '<div class="price">' + money(r.ratePerNight) + "</div>" +
+            '<div class="nights-row">' +
+              '<label for="nights-' + r.id + '">Nights</label>' +
+              '<input id="nights-' + r.id + '" class="room-nights" type="number" min="1" max="30" value="' + r.nights + '" data-id="' + r.id + '" />' +
+            "</div>" +
+            '<div class="price-total"><span id="nightsLabel-' + r.id + '">' + r.nights + (r.nights === 1 ? " night" : " nights") + '</span>: <strong id="total-' + r.id + '">' + money(r.total) + "</strong></div>" +
+            '<div class="avail ' + availClass + '">' + availText + "</div>" +
+            '<button class="reserve" data-id="' + r.id + '" ' + (canBook ? "" : "disabled") + ">Reserve</button>" +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function attachNightInputs() {
+        var els = list.querySelectorAll(".room-nights");
+        for (var i = 0; i < els.length; i++) {
+          els[i].addEventListener("change", function () {
+            var id = Number(this.getAttribute("data-id"));
+            var v = Math.min(30, Math.max(1, Math.round(Number(this.value) || 1)));
+            this.value = v;
+            roomNights[id] = v;
+            var room = items.filter(function (x) { return x.id === id; })[0];
+            if (room) {
+              var tl = document.getElementById("total-" + id);
+              if (tl) tl.textContent = money(v * room.ratePerNight);
+              var nl = document.getElementById("nightsLabel-" + id);
+              if (nl) nl.textContent = v + (v === 1 ? " night" : " nights");
+            }
+            load();
+          });
+        }
+      }
+
+      document.getElementById("searchBtn").addEventListener("click", function () {
+        if (!checkIn.value || !nights.value || Number(nights.value) < 1) {
+          alert("Please choose a check-in date and at least 1 night.");
+          return;
+        }
+        load();
+      });
+
+      /* Reserve modal */
+      var backdrop = document.getElementById("backdrop");
+      var selected = null;
+      list.addEventListener("click", function (e) {
+        var btn = e.target.closest(".reserve");
+        if (!btn || btn.disabled) return;
+        selected = items.filter(function (r) { return r.id === Number(btn.getAttribute("data-id")); })[0];
+        if (!selected) return;
+        var stayNights = roomNights[selected.id] || defaultNights();
+        selected.nights = stayNights;
+        selected.total = stayNights * selected.ratePerNight;
+        var stayCheckOut = addDays(checkIn.value, stayNights);
+        document.getElementById("mTitle").textContent = "Reserve " + selected.name;
+        document.getElementById("mSub").textContent =
+          selected.type + " · " + fmt(checkIn.value) + " – " + fmt(stayCheckOut) + " · " + stayNights + " night(s) · " + money(selected.total);
+        document.getElementById("mBody").innerHTML =
+          '<div class="field"><label>Full name</label><input id="bkName" placeholder="Your full name" /></div>' +
+          '<div class="field"><label>Phone</label><input id="bkPhone" placeholder="+256 …" /></div>' +
+          '<div class="field"><label>Email</label><input id="bkEmail" type="email" placeholder="you@example.com" /></div>' +
+          '<div class="field"><label>Payment option</label><select id="bkPay">' +
+          '<option value="pay_on_arrival">Pay on arrival (cash)</option>' +
+          '<option value="mobile_money">Mobile Money (MTN / Airtel)</option>' +
+          '<option value="card">Pay by card online</option>' +
+          '<option value="bank">Bank transfer</option>' +
+          "</select></div>" +
+          '<div class="field" id="bkPayPhoneWrap" hidden><label>Your mobile money number</label><input id="bkPayPhone" placeholder="+256 …" /></div>' +
+          '<p class="note" id="bkPayInfo"></p>' +
+          '<div class="field"><label>Notes (optional)</label><textarea id="bkNotes" rows="2" placeholder="Arrival time, special requests…"></textarea></div>' +
+          '<p class="error" id="bkError" hidden></p>';
+        var paySel = document.getElementById("bkPay");
+        var payPhoneWrap = document.getElementById("bkPayPhoneWrap");
+        var payInfoEl = document.getElementById("bkPayInfo");
+        function updatePay() {
+          payPhoneWrap.hidden = paySel.value !== "mobile_money";
+          payInfoEl.textContent = payInfo(paySel.value, selected.total);
+        }
+        fetch("/api/stripe?action=status")
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.configured) {
+              payInfoEl.textContent = "Pay securely by card at checkout — you'll be taken to the payment page after confirming.";
+            }
+          })
+          .catch(function () {});
+        paySel.onchange = updatePay;
+        updatePay();
+        document.getElementById("mFooter").style.display = "";
+        backdrop.hidden = false;
+      });
+
+      document.getElementById("mCancel").addEventListener("click", function () { backdrop.hidden = true; });
+      backdrop.addEventListener("click", function (e) { if (e.target.id === "backdrop") backdrop.hidden = true; });
+
+      function renderSuccess(json, paid) {
+        var payText;
+        if (json.paymentMethod === "mobile_money" && paid) {
+          payText = "<strong>Paid instantly via Mobile Money</strong> — your booking is fully confirmed.";
+        } else {
+          payText = "<strong>Payment:</strong> " + esc(payInfo(json.paymentMethod || "pay_on_arrival", json.total));
+        }
+        var holdLine = "";
+        var linkLine = "";
+        var receiptLine = "";
+        if (!paid && json.holdExpiresAt) {
+          holdLine = "Your room is held until <strong>" + esc(new Date(json.holdExpiresAt).toLocaleString()) + "</strong>." +
+            " If the booking isn't confirmed or paid by then, the room will be released automatically.<br><br>";
+        }
+        if (!paid && json.paymentLink) {
+          linkLine = "Payment link: <a href=\"" + esc(json.paymentLink) + "\" style=\"color:var(--btn);font-weight:700;\">" + esc("https://otzu-tech-solutions.vercel.app" + json.paymentLink) + "</a> — use it anytime to complete payment.<br><br>";
+        }
+        if (paid) {
+          receiptLine = 'Receipt: <a href="/api/booking?action=receipt-pdf&ref=' + esc(json.reference) + '" style="color:var(--btn);font-weight:700;">Download receipt (PDF)</a><br><br>';
+        }
+        document.getElementById("mTitle").textContent = "Booking confirmed!";
+        document.getElementById("mSub").textContent = "";
+        document.getElementById("mBody").innerHTML =
+          '<div class="success">' +
+          '<div>Your booking reference is</div>' +
+          '<div class="ref">' + esc(json.reference) + "</div>" +
+          '<div class="details">' +
+            esc(json.room.name) + " (" + esc(json.room.type) + ")<br>" +
+            fmt(json.checkIn) + " → " + fmt(json.checkOut) + " · " + json.nights + " night(s)<br>" +
+            "Check-in from " + fmt12(json.checkInTime) + " · Check-out by " + fmt12(json.checkOutTime) + "<br>" +
+            "Total: <strong>" + money(json.total) + "</strong><br>" +
+            "Invoice: " + esc(json.invoiceNumber) + "<br><br>" +
+            payText + "<br><br>" +
+            holdLine +
+            linkLine +
+            receiptLine +
+            "A confirmation has been sent to our team. See you soon!" +
+            "<br><br><strong>Lost your reference?</strong> Find it anytime at " +
+            '<a href="/find-booking" style="color:var(--btn);font-weight:700;">Find my booking</a> with your email or phone.' +
+          "</div></div>";
+        document.getElementById("mFooter").style.display = "none";
+        load();
+      }
+
+      function pollMtn(booking) {
+        document.getElementById("mTitle").textContent = "Approve the payment on your phone";
+        document.getElementById("mSub").textContent = "";
+        document.getElementById("mFooter").style.display = "none";
+        document.getElementById("mBody").innerHTML =
+          '<div class="success">' +
+          '<div style="font-size:1.6rem;">📱</div>' +
+          '<div style="font-size:0.92rem;color:#334155;line-height:1.7;margin-top:10px;">' +
+            "A payment request for <strong>" + money(booking.total) + "</strong> has been sent to <strong>" +
+            esc(booking.paymentPhone || (booking.guest && booking.guest.phone) || "your phone") + "</strong>.<br>" +
+            "Check your phone and <strong>approve the Mobile Money prompt</strong>.<br><br>" +
+            "Booking reference: <strong>" + esc(booking.reference) + "</strong><br>" +
+            '<em style="color:#b45309;font-size:0.82rem;">Hold expires in about ' + (booking.holdMinutes || 30) + " minutes — approve the payment before it lapses.</em><br>" +
+            '<span id="mtnWait" style="color:var(--muted);font-size:0.82rem;">Waiting for payment…</span>' +
+          "</div></div>";
+        var stopped = false;
+        var tries = 0;
+        var iv = setInterval(async function () {
+          if (stopped) return;
+          tries++;
+          try {
+            var res = await fetch("/api/booking?action=mtn-check&ref=" + encodeURIComponent(booking.momo.reference));
+            var d = await res.json();
+            if (d.status === "SUCCESSFUL") {
+              stopped = true;
+              clearInterval(iv);
+              renderSuccess(booking, true);
+              return;
+            }
+            if (d.status === "FAILED" || d.status === "REJECTED" || d.status === "TIMEOUT" || d.status === "NOT_FOUND") {
+              stopped = true;
+              clearInterval(iv);
+              showMtnFailed(booking, d.status);
+              return;
+            }
+            var wait = document.getElementById("mtnWait");
+            if (wait) wait.textContent = "Waiting for payment… (" + Math.round(tries * 5) + "s)";
+          } catch (e) {
+            /* transient error — keep polling */
+          }
+        }, 5000);
+        setTimeout(function () {
+          if (!stopped) {
+            stopped = true;
+            clearInterval(iv);
+            var wait = document.getElementById("mtnWait");
+            if (wait) wait.textContent = "Still waiting… You can close this window; we'll confirm once payment arrives.";
+          }
+        }, 300000);
+      }
+
+      function showMtnFailed(booking, status) {
+        var reason = "The payment request was not completed" + (status ? " (" + status + ")" : "") + ".";
+        document.getElementById("mTitle").textContent = "Payment not completed";
+        document.getElementById("mSub").textContent = "";
+        document.getElementById("mFooter").style.display = "none";
+        document.getElementById("mBody").innerHTML =
+          '<div class="success">' +
+          '<div style="font-size:1.6rem;">⚠️</div>' +
+          '<div style="font-size:0.92rem;color:#334155;line-height:1.7;margin-top:10px;">' +
+            esc(reason) + "<br>Your booking is <strong>held</strong> (reference <strong>" + esc(booking.reference) + "</strong>" +
+            (booking.holdExpiresAt ? " until " + esc(new Date(booking.holdExpiresAt).toLocaleString()) : "") + ")." +
+            "<br>Try sending the payment prompt again, or choose another payment method." +
+          "</div>" +
+          '<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">' +
+            '<button class="btn" id="mtnRetry" style="background:var(--btn);">Resend payment prompt</button>' +
+            '<button class="btn ghost" id="mtnClose">Close</button>' +
+          "</div></div>";
+        document.getElementById("mtnRetry").addEventListener("click", function () { resendMtnPrompt(booking); });
+        document.getElementById("mtnClose").addEventListener("click", function () { backdrop.hidden = true; load(); });
+      }
+
+      async function resendMtnPrompt(booking) {
+        var btn = document.getElementById("mtnRetry");
+        if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+        try {
+          var res = await fetch("/api/booking?action=mtn-pay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reservationId: booking.reservationId }),
+          });
+          var json = await res.json();
+          if (!res.ok) throw new Error(json.error || "Could not resend payment prompt");
+          booking.momo = json.momo;
+          pollMtn(booking);
+        } catch (e) {
+          var el = document.getElementById("mBody");
+          if (el) el.insertAdjacentHTML("beforeend", '<p class="error">' + esc(e.message) + "</p>");
+          if (btn) { btn.disabled = false; btn.textContent = "Resend payment prompt"; }
+        }
+      }
+
+      document.getElementById("mConfirm").addEventListener("click", async function () {
+        var btn = this;
+        var payload = {
+          roomId: selected.id,
+          checkIn: checkIn.value,
+          checkOut: addDays(checkIn.value, Math.max(1, selected.nights || defaultNights())),
+          name: document.getElementById("bkName").value,
+          phone: document.getElementById("bkPhone").value,
+          email: document.getElementById("bkEmail").value,
+          paymentMethod: document.getElementById("bkPay").value,
+          paymentPhone: document.getElementById("bkPayPhone").value,
+          notes: document.getElementById("bkNotes").value,
+        };
+        var errEl = document.getElementById("bkError");
+        if (!payload.name.trim() || (!payload.phone.trim() && !payload.email.trim())) {
+          errEl.textContent = "Please provide your name and a phone number or email.";
+          errEl.hidden = false;
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = "Confirming…";
+        try {
+          var res = await fetch("/api/booking", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          var json = await res.json();
+          if (!res.ok) throw new Error(json.error || "Booking failed");
+          if (json.requiresPayment && json.momo && json.momo.reference) {
+            pollMtn(json);
+          } else {
+            renderSuccess(json, false);
+          }
+        } catch (e) {
+          errEl.textContent = e.message;
+          errEl.hidden = false;
+          btn.disabled = false;
+          btn.textContent = "Confirm booking";
+        }
+      });
+
+      checkAccess();
+      fetch("/api/booking?action=mtn-status")
+        .then(function (r) { return r.json(); })
+        .then(function (d) { mtnReady = !!(d.configured); })
+        .catch(function () { mtnReady = false; });
+    })();
+  </script>
+</body>
+</html>

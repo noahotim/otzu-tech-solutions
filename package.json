@@ -1,0 +1,16 @@
+{
+  "name": "otzu-tech-solutions",
+  "private": true,
+  "version": "1.0.0",
+  "description": "OTZU Tech Solutions – Cloudflare Pages edition (migrated from Vercel)",
+  "scripts": {
+    "dev": "wrangler pages dev . --compatibility-date=2024-01-01",
+    "deploy": "wrangler pages deploy . --project-name=otzu-tech-solutions",
+    "db:create": "wrangler d1 create otzu-db",
+    "db:migrate": "wrangler d1 execute otzu-db --file=./schema.sql",
+    "db:seed": "wrangler d1 execute otzu-db --file=./seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
