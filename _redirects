@@ -1,0 +1,11 @@
+# Cloudflare Pages redirects & rewrites
+# The landing page is fully static. Two dynamic routes exist on Vercel:
+/*
+# Keep booking & management system on Vercel until you migrate them separately.
+# Uncomment these if you want Cloudflare to proxy to Vercel:
+/book/*  https://otzu-tech-solutions.vercel.app/book/:splat  200
+/manage/* https://otzu-tech-solutions.vercel.app/manage/:splat  200
+/api/*   https://otzu-tech-solutions.vercel.app/api/:splat  200
+
+# SPA fallback - optional, only if you add client routing
+# /* /index.html 200

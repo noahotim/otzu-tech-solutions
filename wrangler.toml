@@ -1,0 +1,14 @@
+name = "otzu-tech-solutions"
+type = "javascript"
+compatibility_date = "2024-01-01"
+
+# Cloudflare Pages - no build needed for static site
+# If using Pages, this file is optional. For reference:
+# [site]
+# bucket = "./"
+
+# Pages Functions are in ./functions/
+# Bind email/KV/D1 here if needed, e.g.:
+# [[kv_namespaces]]
+# binding = "CONTACT_KV"
+# id = "xxxx"
