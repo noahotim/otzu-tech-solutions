@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "otzu-tech-solutions",
+  "main": "_worker.js",
   "compatibility_date": "2024-01-01",
   "assets": {
     "directory": ".",
