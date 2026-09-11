@@ -1,9 +1,7 @@
-name = "otzu-tech-solutions"
-type = "javascript"
 compatibility_date = "2024-01-01"
-pages_build_output_dir = "."
 
-# Cloudflare Pages — static + Functions
+# Cloudflare Pages — static + Functions (git-connected Pages needs NO `name`/`type`/`pages_build_output_dir`)
+# Leave build command EMPTY in dashboard — Pages auto-detects static + functions/
 # No build step: Pages serves index.html, book/, manage/, console/ directly.
 # Functions in ./functions/ handle /api/*
 
